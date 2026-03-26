@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Crescita — Antonino & Lorenzo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -42,6 +42,12 @@
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+  }
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .nav { padding-bottom: env(safe-area-inset-bottom); }
+    @media (max-width: 900px) {
+      .main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+    }
   }
 
   /* HEADER */
@@ -373,11 +379,76 @@
 
   /* RESPONSIVE */
   @media (max-width: 900px) {
-    .main { padding: 20px 16px; }
+    .main { padding: 16px 12px 100px; } /* padding bottom per nav bottom */
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .header { padding: 12px 16px; }
+    .header-title { font-size: 1.2rem; }
+    .badge { padding: 4px 10px; font-size: 0.72rem; }
+    /* Nav diventa bottom bar su mobile */
+    .nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      justify-content: space-around;
+      padding: 0;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: none;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    }
+    .nav-tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 4px 12px;
+      font-size: 0.7rem;
+      border-bottom: none;
+      border-top: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      line-height: 1.2;
+    }
+    .nav-tab.active { border-top-color: var(--acc); border-bottom-color: transparent; color: var(--text); }
+    /* Card padding ridotto */
+    .card { padding: 16px; }
+    /* Tabella: font più piccolo, scroll orizzontale */
+    table { font-size: 0.75rem; }
+    th { padding: 8px 8px; font-size: 0.62rem; }
+    td { padding: 8px 8px; }
+    /* Bottoni tabella più piccoli */
+    .btn-danger { padding: 5px 8px; font-size: 0.72rem; }
+    /* Header tabella con wrap */
+    .card-title { flex-wrap: wrap; gap: 8px; }
+    /* Stat cards più compatte */
+    .stat-value { font-size: 1.3rem; }
+    /* Selector row scroll */
+    .selector-row { overflow-x: auto; padding-bottom: 4px; flex-wrap: nowrap; }
+    /* Section header */
+    .section-header { margin-bottom: 14px; }
+    .section-title { font-size: 1.2rem; }
+    /* Form input touch-friendly */
+    input, select { padding: 12px 14px; font-size: 1rem; }
+    .btn-primary { width: 100%; padding: 14px; font-size: 1rem; }
+    /* calc preview stack */
+    .calc-preview { flex-wrap: wrap; gap: 8px; }
+    /* Export/Import bottoni su mobile */
+    .table-actions { flex-wrap: wrap; }
+    /* Chart heights ridotte su mobile */
+    .chart-container { height: 240px; }
+    .chart-container-tall { height: 280px; }
+    /* Toast sopra nav bottom */
+    .toast { bottom: 80px; right: 12px; left: 12px; text-align: center; }
+    /* ML result più compatto */
+    .ml-result-value { font-size: 2.8rem; }
+  }
+
+  @media (max-width: 480px) {
     .form-grid { grid-template-columns: 1fr; }
-    .header { padding: 16px; }
-    .nav { padding: 0 16px; }
+    .header-badges { display: none; } /* nasconde badge su schermi molto piccoli */
+    .info-pill { display: none; }
   }
 
   /* ANIMATIONS */
@@ -459,15 +530,15 @@
 </header>
 
 <nav class="nav">
-  <div class="nav-tab active" onclick="switchTab('inserimento')">📋 Inserimento dati</div>
-  <div class="nav-tab" onclick="switchTab('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</div>
   <div class="nav-tab" onclick="switchTab('predizione')">🔮 Predizione altezza</div>
+  <div class="nav-tab" onclick="switchTab('inserimento')">📋 Inserimento dati</div>
 </nav>
 
 <main class="main">
 
   <!-- ======================== TAB 1: INSERIMENTO ======================== -->
-  <section id="tab-inserimento" class="section active">
+  <section id="tab-inserimento" class="section">
 
     <div class="section-header mb-28">
       <div class="section-title">Inserimento misurazione</div>
@@ -557,7 +628,7 @@
   </section>
 
   <!-- ======================== TAB 2: DASHBOARD ======================== -->
-  <section id="tab-dashboard" class="section">
+  <section id="tab-dashboard" class="section active">
 
     <div class="section-header mb-20">
       <div class="section-title">Dashboard crescita</div>
