@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crescita — Antonino & Lorenzo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0e1117;
+    --bg2: #151922;
+    --bg3: #1c2230;
+    --border: #2a3347;
+    --border2: #3a4a66;
+    --text: #e8edf5;
+    --text2: #8a9ab8;
+    --text3: #5a6a88;
+    --ant: #4fc3f7;
+    --ant2: #0288d1;
+    --lor: #81c784;
+    --lor2: #388e3c;
+    --acc: #f0a500;
+    --red: #ef5350;
+    --green: #66bb6a;
+    --p3: rgba(255,100,100,0.5);
+    --p15: rgba(255,160,60,0.4);
+    --p50: rgba(100,220,180,0.6);
+    --p85: rgba(255,160,60,0.4);
+    --p97: rgba(255,100,100,0.5);
+    --radius: 12px;
+    --radius2: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .header-title span { color: var(--acc); }
+  .header-badges {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .badge-ant { background: rgba(79,195,247,0.12); border: 1px solid rgba(79,195,247,0.3); color: var(--ant); }
+  .badge-lor { background: rgba(129,199,132,0.12); border: 1px solid rgba(129,199,132,0.3); color: var(--lor); }
+  .badge-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .badge-ant .badge-dot { background: var(--ant); }
+  .badge-lor .badge-dot { background: var(--lor); }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-tab {
+    padding: 14px 24px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+    user-select: none;
+  }
+  .nav-tab:hover { color: var(--text2); }
+  .nav-tab.active { color: var(--text); border-bottom-color: var(--acc); }
+
+  /* MAIN */
+  .main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 20px;
+  }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .mb-20 { margin-bottom: 20px; }
+  .mb-28 { margin-bottom: 28px; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+  input, select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: var(--border2); }
+  select option { background: var(--bg3); }
+
+  .calc-preview {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .calc-preview-label { font-size: 0.78rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .calc-preview-value { font-size: 1.1rem; font-weight: 600; color: var(--acc); font-family: 'DM Mono', monospace; }
+
+  .btn {
+    padding: 11px 24px;
+    border-radius: var(--radius2);
+    border: none;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: var(--acc);
+    color: #0e1117;
+  }
+  .btn-primary:hover { background: #ffb733; transform: translateY(-1px); }
+  .btn-danger {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+  .btn-danger:hover { background: rgba(239,83,80,0.1); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(42,51,71,0.5);
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .chip {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .chip-ant { background: rgba(79,195,247,0.15); color: var(--ant); }
+  .chip-lor { background: rgba(129,199,132,0.15); color: var(--lor); }
+  .delta-pos { color: var(--green); }
+  .delta-neg { color: var(--red); }
+  .delta-neu { color: var(--text3); }
+
+  /* STAT CARDS */
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .stat-sub {
+    font-size: 0.75rem;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  /* CHARTS */
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+  .chart-container-tall {
+    position: relative;
+    height: 360px;
+  }
+
+  /* SELECTOR */
+  .selector-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .selector-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text3);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .selector-btn:hover { border-color: var(--border2); color: var(--text2); }
+  .selector-btn.active-ant { background: rgba(79,195,247,0.12); border-color: var(--ant); color: var(--ant); }
+  .selector-btn.active-lor { background: rgba(129,199,132,0.12); border-color: var(--lor); color: var(--lor); }
+  .selector-btn.active-both { background: rgba(240,165,0,0.1); border-color: var(--acc); color: var(--acc); }
+
+  /* ML SECTION */
+  .ml-result {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+  }
+  .ml-result-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+  }
+  .ml-result-value {
+    font-family: 'Instrument Serif', serif;
+    font-size: 3.5rem;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .ml-result-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text3);
+  }
+  .ml-confidence {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+  }
+  .confidence-bar {
+    width: 120px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s ease;
+  }
+
+  /* PERCENTILE TAG */
+  .perc-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    margin-left: 6px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 0.9rem; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .main { padding: 20px 16px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .header { padding: 16px; }
+    .nav { padding: 0 16px; }
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section.active { animation: fadeIn 0.25s ease; }
+
+  /* SECTION DIVIDER */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    color: var(--text);
+  }
+  .section-sub {
+    font-size: 0.78rem;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* NOTIFICATION */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius2);
+    padding: 12px 18px;
+    font-size: 0.85rem;
+    color: var(--text);
+    box-shadow: var(--shadow);
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* BMI colors */
+  .bmi-sottopeso { color: #42a5f5; }
+  .bmi-normale { color: var(--green); }
+  .bmi-sovrappeso { color: var(--acc); }
+  .bmi-obeso { color: var(--red); }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .info-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-title">crescita <span>&</span> sviluppo</div>
+  <div class="header-badges">
+    <div class="badge badge-ant"><span class="badge-dot"></span>Antonino</div>
+    <div class="badge badge-lor"><span class="badge-dot"></span>Lorenzo</div>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="nav-tab active" onclick="switchTab('inserimento')">📋 Inserimento dati</div>
+  <div class="nav-tab" onclick="switchTab('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab" onclick="switchTab('predizione')">🔮 Predizione altezza</div>
+</nav>
+
+<main class="main">
+
+  <!-- ======================== TAB 1: INSERIMENTO ======================== -->
+  <section id="tab-inserimento" class="section active">
+
+    <div class="section-header mb-28">
+      <div class="section-title">Inserimento misurazione</div>
+      <div class="section-sub">i dati vengono salvati localmente nel browser</div>
+    </div>
+
+    <!-- FORM INSERIMENTO -->
+    <div class="card mb-28">
+      <div class="card-title">+ Nuova misurazione</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Bambino</label>
+          <select id="inp-child" onchange="updateMesiPreview()">
+            <option value="antonino">Antonino</option>
+            <option value="lorenzo">Lorenzo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data misurazione</label>
+          <input type="date" id="inp-date" onchange="updateMesiPreview()">
+        </div>
+        <div class="form-group">
+          <label>Altezza (cm)</label>
+          <input type="number" id="inp-alt" placeholder="es. 82.5" step="0.1" min="30" max="220">
+        </div>
+        <div class="form-group">
+          <label>Peso (kg)</label>
+          <input type="number" id="inp-peso" placeholder="es. 12.3" step="0.1" min="1" max="150">
+        </div>
+        <div class="form-group full">
+          <label>Età calcolata</label>
+          <div class="calc-preview">
+            <span class="calc-preview-label">Mesi:</span>
+            <span class="calc-preview-value" id="mesi-preview">—</span>
+            <span class="calc-preview-label" style="margin-left:20px">Anni + mesi:</span>
+            <span class="calc-preview-value" id="anni-preview">—</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:20px; display:flex; gap:12px;">
+        <button class="btn btn-primary" onclick="addMeasurement()">Aggiungi misurazione</button>
+      </div>
+    </div>
+
+    <!-- TABELLA MISURAZIONI -->
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span>📋 Storico misurazioni</span>
+          <div style="display:flex;gap:6px;">
+            <button class="selector-btn active-both" id="tf-both"    onclick="setTableFilter('both')">Entrambi</button>
+            <button class="selector-btn"             id="tf-ant"     onclick="setTableFilter('antonino')">Antonino</button>
+            <button class="selector-btn"             id="tf-lor"     onclick="setTableFilter('lorenzo')">Lorenzo</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="info-pill" id="total-count">0 misurazioni</span>
+          <button class="btn btn-danger" onclick="exportData()">⬇ Esporta JSON</button>
+          <button class="btn btn-danger" onclick="importTrigger()">⬆ Importa JSON</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="measurements-table">
+          <thead>
+            <tr>
+              <th>Bambino</th>
+              <th>Data</th>
+              <th>Mesi</th>
+              <th>Altezza (cm)</th>
+              <th>Δ Alt (cm)</th>
+              <th>Δ Alt (%)</th>
+              <th>Peso (kg)</th>
+              <th>Δ Peso (kg)</th>
+              <th>Δ Peso (%)</th>
+              <th>BMI</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="11"><div class="empty-state"><div class="empty-icon">📏</div><div class="empty-text">Nessuna misurazione inserita.<br>Usa il form sopra per iniziare.</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ======================== TAB 2: DASHBOARD ======================== -->
+  <section id="tab-dashboard" class="section">
+
+    <div class="section-header mb-20">
+      <div class="section-title">Dashboard crescita</div>
+      <div class="section-sub">confronto con percentili OMS</div>
+    </div>
+
+    <!-- STAT SUMMARY -->
+    <div id="stats-grid" class="grid-4 mb-28"></div>
+
+    <!-- SELECTOR -->
+    <div class="selector-row">
+      <button class="selector-btn active-both" onclick="setDashView('both')">Entrambi</button>
+      <button class="selector-btn" onclick="setDashView('antonino')">Solo Antonino</button>
+      <button class="selector-btn" onclick="setDashView('lorenzo')">Solo Lorenzo</button>
+    </div>
+
+    <div class="grid-2 mb-20">
+      <div class="card">
+        <div class="card-title">📏 Crescita in altezza (cm)</div>
+        <div class="chart-container-tall"><canvas id="chart-altezza"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚖ Crescita in peso (kg)</div>
+        <div class="chart-container-tall"><canvas id="chart-peso"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-20">
+      <div class="card">
+        <div class="card-title">📐 BMI nel tempo</div>
+        <div class="chart-container"><canvas id="chart-bmi"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Delta altezza mensile (cm)</div>
+        <div class="chart-container"><canvas id="chart-delta-alt"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-20">
+      <div class="card">
+        <div class="card-title">📈 Delta peso mensile (kg)</div>
+        <div class="chart-container"><canvas id="chart-delta-peso"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Percentile altezza stimato</div>
+        <div class="chart-container"><canvas id="chart-percentile"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📐 Velocità di crescita altezza (cm/mese)</div>
+        <div class="chart-container"><canvas id="chart-delta-alt-norm"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📐 Velocità di crescita peso (kg/mese)</div>
+        <div class="chart-container"><canvas id="chart-delta-peso-norm"></canvas></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ======================== TAB 3: PREDIZIONE ======================== -->
+  <section id="tab-predizione" class="section">
+
+    <div class="section-header mb-20">
+      <div class="section-title">Predizione altezza</div>
+      <div class="section-sub">modello ML basato su dati storici + curve OMS</div>
+    </div>
+
+    <div class="grid-2 mb-20">
+      <div class="card">
+        <div class="card-title">🔮 Parametri predizione</div>
+        <div class="form-grid" style="margin-bottom:20px">
+          <div class="form-group">
+            <label>Bambino</label>
+            <select id="ml-child">
+              <option value="antonino">Antonino</option>
+              <option value="lorenzo">Lorenzo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Data target</label>
+            <input type="date" id="ml-date">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="runPrediction()">Calcola predizione</button>
+
+        <div class="divider"></div>
+
+        <div class="card-title">ℹ Metodologia</div>
+        <div style="font-size:0.8rem;color:var(--text3);line-height:1.7;">
+          Il modello combina tre approcci:<br>
+          <strong style="color:var(--text2)">1. Regressione polinomiale</strong> sui dati storici del bambino (peso maggiore agli ultimi punti)<br>
+          <strong style="color:var(--text2)">2. Curva P50 OMS</strong> come riferimento baseline per l'età<br>
+          <strong style="color:var(--text2)">3. Interpolazione del percentile attuale</strong> per stimare la traiettoria personale<br>
+          Il risultato è una media pesata con intervallo di confidenza ±2σ.
+        </div>
+      </div>
+
+      <div>
+        <div id="ml-result-card" class="ml-result" style="margin-bottom:16px;">
+          <div class="ml-result-label">Altezza stimata</div>
+          <div class="ml-result-value" id="ml-height-value">—</div>
+          <div class="ml-result-range" id="ml-height-range">inserire i parametri e calcolare</div>
+          <div class="ml-confidence">
+            <span style="font-size:0.72rem;color:var(--text3);font-family:'DM Mono',monospace;">Affidabilità:</span>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="confidence-fill" style="width:0%;background:var(--acc)"></div>
+            </div>
+            <span style="font-size:0.72rem;font-family:'DM Mono',monospace;" id="confidence-pct">—</span>
+          </div>
+        </div>
+
+        <div class="card" id="ml-detail" style="display:none">
+          <div class="card-title">Dettaglio calcolo</div>
+          <div id="ml-detail-content" style="font-size:0.82rem;color:var(--text2);line-height:1.8;font-family:'DM Mono',monospace;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📉 Proiezione altezza — storico + predizione</div>
+      <div class="chart-container-tall"><canvas id="chart-ml"></canvas></div>
+    </div>
+
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// DATI OMS — Percentili altezza maschi (mesi 0-228)
+// P3, P15, P50, P85, P97
+// Fonte: WHO Child Growth Standards
+// =====================================================================
+const WHO_HEIGHT_BOYS = {
+  // mese: [P3, P15, P50, P85, P97]
+  0:[46.1,47.9,49.9,51.8,53.7],1:[50.8,52.8,54.7,56.7,58.6],2:[54.4,56.4,58.4,60.4,62.4],
+  3:[57.3,59.4,61.4,63.5,65.5],4:[59.7,61.8,63.9,66.0,68.0],5:[61.7,63.8,65.9,68.0,70.1],
+  6:[63.3,65.5,67.6,69.8,71.9],7:[64.8,67.0,69.2,71.3,73.5],8:[66.2,68.4,70.6,72.8,75.0],
+  9:[67.5,69.7,72.0,74.2,76.5],10:[68.7,71.0,73.3,75.6,77.9],11:[69.9,72.2,74.5,76.9,79.2],
+  12:[71.0,73.4,75.7,78.1,80.5],13:[72.1,74.5,76.9,79.3,81.8],14:[73.1,75.6,78.0,80.5,83.0],
+  15:[74.1,76.6,79.1,81.7,84.2],16:[75.0,77.6,80.2,82.8,85.4],17:[76.0,78.6,81.2,83.9,86.6],
+  18:[76.9,79.6,82.3,85.0,87.7],19:[77.7,80.5,83.2,86.0,88.8],20:[78.6,81.4,84.2,87.0,89.9],
+  21:[79.4,82.3,85.1,88.0,91.0],22:[80.2,83.1,86.0,88.9,91.9],23:[81.0,84.0,86.9,89.9,92.9],
+  24:[81.7,84.8,87.8,90.8,93.8],30:[86.3,89.5,92.7,96.0,99.2],36:[90.3,93.7,97.1,100.6,104.0],
+  42:[93.8,97.5,101.1,104.8,108.5],48:[97.0,100.8,104.7,108.6,112.5],
+  54:[100.0,104.1,108.1,112.2,116.2],60:[102.8,107.0,111.2,115.4,119.6],
+  66:[105.4,109.8,114.2,118.6,123.0],72:[107.9,112.4,116.9,121.5,126.0],
+  78:[110.2,114.9,119.5,124.2,128.9],84:[112.4,117.2,121.9,126.7,131.4],
+  90:[114.5,119.3,124.2,129.1,133.9],96:[116.5,121.5,126.4,131.4,136.3],
+  102:[118.4,123.5,128.6,133.7,138.7],108:[120.3,125.5,130.7,135.9,141.0],
+  114:[122.1,127.4,132.7,138.0,143.3],120:[123.9,129.3,134.7,140.1,145.5],
+  126:[125.6,131.1,136.6,142.1,147.6],132:[127.3,132.9,138.5,144.1,149.6],
+  138:[129.1,134.7,140.4,146.1,151.7],144:[130.8,136.6,142.4,148.2,154.0],
+  150:[132.6,138.5,144.4,150.4,156.3],156:[134.5,140.5,146.6,152.7,158.7],
+  162:[136.5,142.7,148.9,155.1,161.2],168:[138.7,145.0,151.4,157.7,163.9],
+  174:[141.1,147.6,154.1,160.6,167.0],180:[143.7,150.4,157.1,163.7,170.2],
+  186:[146.6,153.5,160.3,167.0,173.7],192:[149.5,156.4,163.2,170.1,176.8],
+  198:[152.3,159.2,166.0,172.9,179.6],204:[154.7,161.7,168.6,175.5,182.3],
+  210:[156.7,163.7,170.6,177.6,184.4],216:[158.1,165.2,172.3,179.3,186.2],
+  222:[159.1,166.3,173.5,180.7,187.7],228:[159.8,167.1,174.5,181.8,189.0]
+};
+
+// Percentili peso maschi (kg) — P3, P15, P50, P85, P97
+const WHO_WEIGHT_BOYS = {
+  0:[2.5,2.9,3.3,3.9,4.4],1:[3.4,3.9,4.5,5.1,5.8],2:[4.4,5.0,5.6,6.3,7.1],
+  3:[5.1,5.7,6.4,7.2,8.0],4:[5.6,6.3,7.0,7.9,8.7],5:[6.1,6.7,7.5,8.4,9.3],
+  6:[6.4,7.1,7.9,8.8,9.8],7:[6.7,7.4,8.3,9.2,10.3],8:[6.9,7.7,8.6,9.6,10.7],
+  9:[7.1,7.9,8.9,9.9,11.0],10:[7.4,8.2,9.2,10.2,11.4],11:[7.6,8.4,9.4,10.5,11.7],
+  12:[7.7,8.6,9.6,10.8,12.0],15:[8.2,9.2,10.3,11.5,12.8],18:[8.7,9.7,10.9,12.2,13.6],
+  24:[9.5,10.7,12.0,13.5,15.0],30:[10.2,11.5,12.9,14.6,16.3],36:[10.8,12.2,13.8,15.6,17.5],
+  42:[11.4,12.9,14.6,16.5,18.6],48:[12.0,13.6,15.5,17.6,19.9],54:[12.6,14.3,16.3,18.6,21.3],
+  60:[13.1,15.0,17.2,19.7,22.6],66:[13.7,15.7,18.0,20.8,24.0],72:[14.3,16.4,18.9,22.0,25.5],
+  78:[14.9,17.1,19.8,23.1,26.9],84:[15.5,17.9,20.8,24.4,28.5],90:[16.1,18.7,21.8,25.7,30.2],
+  96:[16.8,19.5,22.9,27.2,32.1],102:[17.4,20.4,24.0,28.7,34.1],108:[18.1,21.4,25.3,30.4,36.3],
+  114:[18.9,22.4,26.6,32.2,38.7],120:[19.6,23.5,28.0,34.1,41.3],126:[20.4,24.6,29.5,36.2,44.0],
+  132:[21.3,25.8,31.2,38.4,46.9],138:[22.2,27.1,32.9,40.7,49.9],144:[23.1,28.5,34.8,43.1,53.1],
+  150:[24.2,30.0,36.9,45.7,56.4],156:[25.3,31.7,39.2,48.5,59.9],162:[26.6,33.5,41.6,51.4,63.4],
+  168:[28.0,35.5,44.2,54.5,67.0],174:[29.6,37.7,47.0,57.7,70.6],180:[31.3,39.9,49.8,60.9,74.1],
+  186:[33.1,42.2,52.7,64.0,77.3],192:[35.0,44.4,55.5,66.9,80.1],198:[36.8,46.5,57.9,69.5,82.4],
+  204:[38.5,48.3,60.1,71.7,84.3],210:[40.0,49.9,61.9,73.5,85.9],216:[41.2,51.2,63.5,75.0,87.1],
+  222:[42.2,52.2,64.7,76.2,88.1],228:[42.9,53.0,65.6,77.1,88.9]
+};
+
+// =====================================================================
+// STATE
+// =====================================================================
+let measurements = [];
+const config = { dobAnt: '2019-08-31', dobLor: '2022-01-22' };
+let dashView = 'both';
+let charts = {};
+
+// =====================================================================
+// INIT
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  document.getElementById('inp-date').value = today();
+  document.getElementById('ml-date').value = today();
+  updateMesiPreview();
+});
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+const PRELOAD_DATA = [{"id": 1000, "child": "antonino", "date": "2019-08-31", "mesi": 0.0, "alt": 51.0, "peso": 4.08}, {"id": 1001, "child": "antonino", "date": "2019-09-16", "mesi": 0.5, "alt": 53.0, "peso": 4.17}, {"id": 1002, "child": "antonino", "date": "2019-09-30", "mesi": 1.0, "alt": 56.5, "peso": 4.68}, {"id": 1003, "child": "antonino", "date": "2019-10-14", "mesi": 1.5, "alt": 60.0, "peso": 5.06}, {"id": 1004, "child": "antonino", "date": "2019-10-28", "mesi": 2.0, "alt": 60.0, "peso": 5.41}, {"id": 1005, "child": "antonino", "date": "2019-11-11", "mesi": 2.5, "alt": 61.0, "peso": 5.65}, {"id": 1006, "child": "antonino", "date": "2019-11-25", "mesi": 3.0, "alt": 62.0, "peso": 5.88}, {"id": 1007, "child": "antonino", "date": "2019-12-16", "mesi": 3.5, "alt": 64.0, "peso": 6.49}, {"id": 1008, "child": "antonino", "date": "2019-12-30", "mesi": 4.0, "alt": 67.0, "peso": 6.69}, {"id": 1009, "child": "antonino", "date": "2020-01-13", "mesi": 4.5, "alt": 67.0, "peso": 6.89}, {"id": 1010, "child": "antonino", "date": "2020-01-31", "mesi": 5.0, "alt": 68.0, "peso": 7.14}, {"id": 1011, "child": "antonino", "date": "2020-02-17", "mesi": 5.5, "alt": 69.0, "peso": 7.45}, {"id": 1012, "child": "antonino", "date": "2020-03-02", "mesi": 6.0, "alt": 70.0, "peso": 7.54}, {"id": 1013, "child": "antonino", "date": "2020-03-15", "mesi": 6.5, "alt": 71.0, "peso": 7.6}, {"id": 1014, "child": "antonino", "date": "2020-03-31", "mesi": 7.0, "alt": 72.0, "peso": 7.72}, {"id": 1015, "child": "antonino", "date": "2020-04-14", "mesi": 7.5, "alt": 72.5, "peso": 8.1}, {"id": 1016, "child": "antonino", "date": "2020-04-30", "mesi": 8.0, "alt": 73.5, "peso": 8.41}, {"id": 1017, "child": "antonino", "date": "2020-05-14", "mesi": 8.5, "alt": 74.5, "peso": 8.69}, {"id": 1018, "child": "antonino", "date": "2020-05-30", "mesi": 9.0, "alt": 75.0, "peso": 8.98}, {"id": 1019, "child": "antonino", "date": "2020-06-15", "mesi": 9.5, "alt": 75.5, "peso": 9.17}, {"id": 1020, "child": "antonino", "date": "2020-06-30", "mesi": 10.0, "alt": 76.5, "peso": 9.22}, {"id": 1021, "child": "antonino", "date": "2020-07-15", "mesi": 10.5, "alt": 77.5, "peso": 9.5}, {"id": 1022, "child": "antonino", "date": "2020-07-31", "mesi": 11.0, "alt": 78.0, "peso": 9.8}, {"id": 1023, "child": "antonino", "date": "2020-08-15", "mesi": 11.5, "alt": 79.0, "peso": 9.95}, {"id": 1024, "child": "antonino", "date": "2020-08-31", "mesi": 12.0, "alt": 79.5, "peso": 10.1}, {"id": 1025, "child": "antonino", "date": "2020-10-01", "mesi": 13.0, "alt": 80.0, "peso": 10.4}, {"id": 1026, "child": "antonino", "date": "2020-10-31", "mesi": 14.0, "alt": 81.0, "peso": 10.5}, {"id": 1027, "child": "antonino", "date": "2020-12-01", "mesi": 15.0, "alt": 82.0, "peso": 10.8}, {"id": 1028, "child": "antonino", "date": "2020-12-31", "mesi": 16.0, "alt": 83.0, "peso": 11.3}, {"id": 1029, "child": "antonino", "date": "2021-01-31", "mesi": 17.0, "alt": 85.0, "peso": 11.6}, {"id": 1030, "child": "antonino", "date": "2021-03-01", "mesi": 18.0, "alt": 86.0, "peso": 11.8}, {"id": 1031, "child": "antonino", "date": "2021-04-04", "mesi": 19.0, "alt": 87.0, "peso": 11.9}, {"id": 1032, "child": "antonino", "date": "2021-06-04", "mesi": 21.0, "alt": 90.0, "peso": 12.3}, {"id": 1033, "child": "antonino", "date": "2021-08-31", "mesi": 24.0, "alt": 93.0, "peso": 12.7}, {"id": 1034, "child": "antonino", "date": "2021-10-01", "mesi": 25.0, "alt": 93.0, "peso": 13.2}, {"id": 1035, "child": "antonino", "date": "2021-12-08", "mesi": 27.0, "alt": 94.0, "peso": 12.8}, {"id": 1036, "child": "antonino", "date": "2022-01-31", "mesi": 29.0, "alt": 96.0, "peso": 13.4}, {"id": 1037, "child": "antonino", "date": "2022-03-01", "mesi": 30.0, "alt": 96.0, "peso": 13.7}, {"id": 1038, "child": "antonino", "date": "2022-04-04", "mesi": 31.0, "alt": 97.0, "peso": 13.4}, {"id": 1039, "child": "antonino", "date": "2022-09-01", "mesi": 36.0, "alt": 100.0, "peso": 14.3}, {"id": 1040, "child": "antonino", "date": "2023-01-31", "mesi": 41.0, "alt": 103.0, "peso": 15.0}, {"id": 1041, "child": "antonino", "date": "2023-05-31", "mesi": 45.0, "alt": 105.0, "peso": 15.7}, {"id": 1042, "child": "antonino", "date": "2023-08-31", "mesi": 48.0, "alt": 107.0, "peso": 15.8}, {"id": 1043, "child": "antonino", "date": "2023-10-19", "mesi": 49.0, "alt": 107.0, "peso": 15.5}, {"id": 1044, "child": "antonino", "date": "2024-01-05", "mesi": 52.0, "alt": 109.0, "peso": 16.1}, {"id": 1045, "child": "antonino", "date": "2024-04-01", "mesi": 55.0, "alt": 111.0, "peso": 16.7}, {"id": 1046, "child": "antonino", "date": "2024-09-01", "mesi": 60.0, "alt": 114.0, "peso": 17.9}, {"id": 1047, "child": "antonino", "date": "2025-02-01", "mesi": 65.0, "alt": 115.0, "peso": 18.6}, {"id": 1048, "child": "antonino", "date": "2025-07-01", "mesi": 70.0, "alt": 118.0, "peso": 19.6}, {"id": 1049, "child": "antonino", "date": "2025-09-01", "mesi": 72.0, "alt": 119.0, "peso": 20.3}, {"id": 1050, "child": "antonino", "date": "2026-01-01", "mesi": 76.0, "alt": 122.0, "peso": 21.0}, {"id": 1051, "child": "lorenzo", "date": "2022-01-22", "mesi": 0.0, "alt": 56.0, "peso": 4.48}, {"id": 1052, "child": "lorenzo", "date": "2022-02-22", "mesi": 1.0, "alt": 59.0, "peso": 5.15}, {"id": 1053, "child": "lorenzo", "date": "2022-03-22", "mesi": 2.0, "alt": 61.0, "peso": 5.6}, {"id": 1054, "child": "lorenzo", "date": "2022-04-22", "mesi": 3.0, "alt": 63.0, "peso": 6.16}, {"id": 1055, "child": "lorenzo", "date": "2022-05-07", "mesi": 3.5, "alt": 65.0, "peso": 6.32}, {"id": 1056, "child": "lorenzo", "date": "2022-05-22", "mesi": 4.0, "alt": 67.0, "peso": 6.55}, {"id": 1057, "child": "lorenzo", "date": "2022-06-23", "mesi": 5.0, "alt": 69.0, "peso": 7.3}, {"id": 1058, "child": "lorenzo", "date": "2022-07-22", "mesi": 6.0, "alt": 71.0, "peso": 7.4}, {"id": 1059, "child": "lorenzo", "date": "2022-08-23", "mesi": 7.0, "alt": 72.0, "peso": 7.86}, {"id": 1060, "child": "lorenzo", "date": "2022-09-10", "mesi": 7.5, "alt": 72.5, "peso": 8.4}, {"id": 1061, "child": "lorenzo", "date": "2022-09-23", "mesi": 8.0, "alt": 72.0, "peso": 8.66}, {"id": 1062, "child": "lorenzo", "date": "2022-10-23", "mesi": 9.0, "alt": 74.0, "peso": 8.79}, {"id": 1063, "child": "lorenzo", "date": "2022-11-22", "mesi": 10.0, "alt": 74.0, "peso": 8.6}, {"id": 1064, "child": "lorenzo", "date": "2022-12-22", "mesi": 11.0, "alt": 76.0, "peso": 8.65}, {"id": 1065, "child": "lorenzo", "date": "2023-01-06", "mesi": 11.5, "alt": 76.0, "peso": 9.1}, {"id": 1066, "child": "lorenzo", "date": "2023-01-22", "mesi": 12.0, "alt": 77.0, "peso": 9.3}, {"id": 1067, "child": "lorenzo", "date": "2023-02-23", "mesi": 13.0, "alt": 78.0, "peso": 10.05}, {"id": 1068, "child": "lorenzo", "date": "2023-03-22", "mesi": 14.0, "alt": 79.0, "peso": 10.1}, {"id": 1069, "child": "lorenzo", "date": "2023-04-30", "mesi": 15.0, "alt": 80.0, "peso": 10.6}, {"id": 1070, "child": "lorenzo", "date": "2023-05-22", "mesi": 16.0, "alt": 82.0, "peso": 10.8}, {"id": 1071, "child": "lorenzo", "date": "2023-08-28", "mesi": 19.0, "alt": 84.0, "peso": 11.35}, {"id": 1072, "child": "lorenzo", "date": "2023-10-22", "mesi": 21.0, "alt": 86.0, "peso": 11.72}, {"id": 1073, "child": "lorenzo", "date": "2024-01-05", "mesi": 23.0, "alt": 88.0, "peso": 11.2}, {"id": 1074, "child": "lorenzo", "date": "2024-04-01", "mesi": 26.0, "alt": 91.0, "peso": 12.12}, {"id": 1075, "child": "lorenzo", "date": "2024-09-01", "mesi": 31.0, "alt": 94.0, "peso": 12.7}, {"id": 1076, "child": "lorenzo", "date": "2025-02-01", "mesi": 36.0, "alt": 95.0, "peso": 13.2}, {"id": 1077, "child": "lorenzo", "date": "2025-07-01", "mesi": 41.0, "alt": 98.0, "peso": 14.4}, {"id": 1078, "child": "lorenzo", "date": "2025-09-01", "mesi": 43.0, "alt": 99.0, "peso": 14.4}, {"id": 1079, "child": "lorenzo", "date": "2026-01-01", "mesi": 47.0, "alt": 101.0, "peso": 15.2}];
+
+function loadData() {
+  const d = localStorage.getItem('crescita_data');
+  if (d) {
+    measurements = JSON.parse(d);
+  } else {
+    // Prima apertura: carica dati dall'Excel
+    measurements = PRELOAD_DATA;
+    saveData();
+  }
+  updateTable();
+}
+
+function saveData() {
+  localStorage.setItem('crescita_data', JSON.stringify(measurements));
+}
+
+// =====================================================================
+// CALCOLI
+// =====================================================================
+function calcMesi(child, dateStr) {
+  const dob = child === 'antonino' ? config.dobAnt : config.dobLor;
+  if (!dob || !dateStr) return null;
+  const d1 = new Date(dob), d2 = new Date(dateStr);
+
+  // Mesi interi compiuti
+  let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  // Aggiusta se non ha ancora raggiunto il giorno del mese
+  if (d2.getDate() < d1.getDate()) months--;
+  months = Math.max(0, months);
+
+  // Giorni dal compleanno mensile (es: nato il 31, oggi il 15 → 15 giorni)
+  // Usiamo differenza in ms per avere i giorni esatti nel periodo residuo
+  const lastBirthday = new Date(d1);
+  lastBirthday.setFullYear(d2.getFullYear());
+  lastBirthday.setMonth(d2.getMonth() - (d2.getDate() < d1.getDate() ? 1 : 0));
+  // Ricalcola mesi in modo semplice
+  const intMonths = Math.max(0,
+    (d2.getFullYear() - d1.getFullYear()) * 12 +
+    (d2.getMonth() - d1.getMonth()) +
+    (d2.getDate() < d1.getDate() ? -1 : 0)
+  );
+
+  const dayDiff = d2.getDate() - d1.getDate() + (d2.getDate() < d1.getDate() ? 30 : 0);
+
+  if (intMonths < 12) {
+    // Fino a 11 mesi compiuti: granularità al mezzo mese
+    // 0-7 giorni dal compleanno mensile → intero; 8-22 → +0.5; 23+ → prossimo mese
+    if (dayDiff < 8) return intMonths;
+    if (dayDiff < 23) return intMonths + 0.5;
+    return intMonths + 1;
+  } else {
+    // Da 12 mesi in su: arrotondamento al mese più vicino
+    return dayDiff >= 15 ? intMonths + 1 : intMonths;
+  }
+}
+
+function calcBMI(alt, peso) {
+  if (!alt || !peso) return null;
+  return peso / Math.pow(alt / 100, 2);
+}
+
+function bmiCategory(bmi, mesi) {
+  // Per bambini uso soglie semplificate (non le stesse degli adulti)
+  if (mesi < 24) return null; // troppo piccoli per BMI significativo
+  if (bmi < 14) return { label: 'Sottopeso', cls: 'bmi-sottopeso' };
+  if (bmi < 18) return { label: 'Normale', cls: 'bmi-normale' };
+  if (bmi < 25) return { label: 'Sovrappeso', cls: 'bmi-sovrappeso' };
+  return { label: 'Obeso', cls: 'bmi-obeso' };
+}
+
+function formatDelta(v, unit = '') {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="delta-neu">—</span>';
+  const sign = v > 0 ? '+' : '';
+  const cls = v > 0 ? 'delta-pos' : v < 0 ? 'delta-neg' : 'delta-neu';
+  return `<span class="${cls}">${sign}${v.toFixed(2)}${unit}</span>`;
+}
+
+function updateMesiPreview() {
+  const child = document.getElementById('inp-child').value;
+  const date = document.getElementById('inp-date').value;
+  const mesi = calcMesi(child, date);
+  if (mesi === null) {
+    document.getElementById('mesi-preview').textContent = '—';
+    document.getElementById('anni-preview').textContent = '—';
+  } else {
+    // Mostra con .5 se è un semimese
+    const mesiStr = Number.isInteger(mesi) ? String(mesi) : mesi.toFixed(1);
+    document.getElementById('mesi-preview').textContent = mesiStr;
+    const intM = Math.floor(mesi);
+    const y = Math.floor(intM / 12), m = intM % 12;
+    const half = !Number.isInteger(mesi) ? '½' : '';
+    if (intM < 12) {
+      document.getElementById('anni-preview').textContent = mesiStr + ' mesi';
+    } else {
+      document.getElementById('anni-preview').textContent = `${y}a ${m}m${half}`;
+    }
+  }
+}
+
+// =====================================================================
+// PERCENTILE LOOKUP
+// =====================================================================
+function getWHOHeight(mesi) {
+  const keys = Object.keys(WHO_HEIGHT_BOYS).map(Number).sort((a,b)=>a-b);
+  if (mesi <= keys[0]) return WHO_HEIGHT_BOYS[keys[0]];
+  if (mesi >= keys[keys.length-1]) return WHO_HEIGHT_BOYS[keys[keys.length-1]];
+  let lo = keys[0], hi = keys[keys.length-1];
+  for (let i=0;i<keys.length-1;i++) {
+    if (keys[i] <= mesi && mesi <= keys[i+1]) { lo=keys[i]; hi=keys[i+1]; break; }
+  }
+  if (lo === hi) return WHO_HEIGHT_BOYS[lo];
+  const t = (mesi - lo) / (hi - lo);
+  return WHO_HEIGHT_BOYS[lo].map((v,i) => v + t*(WHO_HEIGHT_BOYS[hi][i]-v));
+}
+
+function getWHOWeight(mesi) {
+  const keys = Object.keys(WHO_WEIGHT_BOYS).map(Number).sort((a,b)=>a-b);
+  if (mesi <= keys[0]) return WHO_WEIGHT_BOYS[keys[0]];
+  if (mesi >= keys[keys.length-1]) return WHO_WEIGHT_BOYS[keys[keys.length-1]];
+  let lo=keys[0],hi=keys[keys.length-1];
+  for (let i=0;i<keys.length-1;i++) {
+    if (keys[i]<=mesi && mesi<=keys[i+1]){lo=keys[i];hi=keys[i+1];break;}
+  }
+  const t=(mesi-lo)/(hi-lo);
+  return WHO_WEIGHT_BOYS[lo].map((v,i)=>v+t*(WHO_WEIGHT_BOYS[hi][i]-v));
+}
+
+function estimatePercentile(value, whoArr) {
+  // whoArr = [P3, P15, P50, P85, P97]
+  const percs = [3, 15, 50, 85, 97];
+  if (value <= whoArr[0]) return '<3';
+  if (value >= whoArr[4]) return '>97';
+  for (let i=0;i<4;i++) {
+    if (value >= whoArr[i] && value <= whoArr[i+1]) {
+      const t = (value - whoArr[i]) / (whoArr[i+1] - whoArr[i]);
+      return Math.round(percs[i] + t*(percs[i+1]-percs[i]));
+    }
+  }
+  return '—';
+}
+
+function percColor(p) {
+  if (p === '<3' || p < 3) return '#ef5350';
+  if (p < 15) return '#ff9800';
+  if (p < 85) return '#66bb6a';
+  if (p < 97) return '#ff9800';
+  return '#ef5350';
+}
+
+// =====================================================================
+// CRUD
+// =====================================================================
+function addMeasurement() {
+  const child = document.getElementById('inp-child').value;
+  const date = document.getElementById('inp-date').value;
+  const alt = parseFloat(document.getElementById('inp-alt').value);
+  const peso = parseFloat(document.getElementById('inp-peso').value);
+
+  if (!date) return showToast('⚠ Inserire la data');
+  if (isNaN(alt) || alt <= 0) return showToast('⚠ Inserire altezza valida');
+  if (isNaN(peso) || peso <= 0) return showToast('⚠ Inserire peso valido');
+
+  const mesi = calcMesi(child, date);
+  const m = { id: Date.now(), child, date, mesi, alt, peso };
+  measurements.push(m);
+  measurements.sort((a,b) => {
+    if (a.child !== b.child) return a.child.localeCompare(b.child);
+    return new Date(a.date) - new Date(b.date);
+  });
+  saveData();
+  updateTable();
+  document.getElementById('inp-alt').value = '';
+  document.getElementById('inp-peso').value = '';
+  showToast('✓ Misurazione aggiunta');
+}
+
+function deleteMeasurement(id) {
+  measurements = measurements.filter(m => m.id !== id);
+  saveData();
+  updateTable();
+  showToast('Misurazione eliminata');
+}
+
+// =====================================================================
+// TABLE RENDER
+// =====================================================================
+let tableFilter = 'both';
+
+function setTableFilter(v) {
+  tableFilter = v;
+  ['both','ant','lor'].forEach(k => {
+    const btn = document.getElementById('tf-' + k);
+    if (btn) btn.classList.remove('active-ant','active-lor','active-both');
+  });
+  const key = v==='antonino' ? 'ant' : v==='lorenzo' ? 'lor' : 'both';
+  const btn = document.getElementById('tf-' + key);
+  if (btn) btn.classList.add(v==='antonino' ? 'active-ant' : v==='lorenzo' ? 'active-lor' : 'active-both');
+  updateTable();
+}
+
+function updateTable() {
+  const tbody = document.getElementById('table-body');
+  if (measurements.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">\u{1F4CF}</div><div class="empty-text">Nessuna misurazione inserita.</div></div></td></tr>';
+    document.getElementById('total-count').textContent = '0 misurazioni';
+    return;
+  }
+
+  // Delta calcolati sull'intero dataset per bambino (non sul filtro)
+  const byChild = {};
+  measurements.forEach(m => {
+    if (!byChild[m.child]) byChild[m.child] = [];
+    byChild[m.child].push(m);
+  });
+
+  const enriched = measurements.map(m => {
+    const list = byChild[m.child];
+    const idx = list.findIndex(x => x.id === m.id);
+    const prev = idx > 0 ? list[idx-1] : null;
+    const deltaAlt = prev ? m.alt - prev.alt : null;
+    const deltaPeso = prev ? m.peso - prev.peso : null;
+    const deltaAltPct = prev ? (deltaAlt / prev.alt)*100 : null;
+    const deltaPesoPct = prev ? (deltaPeso / prev.peso)*100 : null;
+    const bmi = calcBMI(m.alt, m.peso);
+    const bmiCat = bmi ? bmiCategory(bmi, m.mesi) : null;
+    const whoH = m.mesi !== null ? getWHOHeight(m.mesi) : null;
+    const perc = whoH ? estimatePercentile(m.alt, whoH) : null;
+    return {...m, deltaAlt, deltaPeso, deltaAltPct, deltaPesoPct, bmi, bmiCat, perc};
+  });
+
+  // Applica filtro
+  const filtered = tableFilter === 'both' ? enriched : enriched.filter(m => m.child === tableFilter);
+
+  document.getElementById('total-count').textContent = tableFilter === 'both'
+    ? measurements.length + ' misurazioni'
+    : filtered.length + ' / ' + measurements.length + ' misurazioni';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">📏</div><div class="empty-text">Nessuna misurazione per questo filtro.</div></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(m => {
+    const chipCls = m.child === 'antonino' ? 'chip-ant' : 'chip-lor';
+    const name = m.child === 'antonino' ? 'Antonino' : 'Lorenzo';
+    const bmiStr = m.bmi ? '<span class="' + (m.bmiCat?.cls||'') + '">' + m.bmi.toFixed(1) + '</span>' : '—';
+    const percStr = m.perc !== null ? '<span class="perc-tag" style="background:' + percColor(m.perc) + '22;color:' + percColor(m.perc) + '">P' + m.perc + '</span>' : '';
+    const mesiStr = m.mesi !== null ? (Number.isInteger(m.mesi) ? m.mesi : m.mesi.toFixed(1)) : '<span style="color:var(--red)">!DOB</span>';
+    return '<tr>' +
+      '<td><span class="chip ' + chipCls + '">' + name + '</span></td>' +
+      '<td>' + m.date + '</td>' +
+      '<td>' + mesiStr + '</td>' +
+      '<td>' + m.alt.toFixed(1) + ' ' + percStr + '</td>' +
+      '<td>' + formatDelta(m.deltaAlt) + '</td>' +
+      '<td>' + formatDelta(m.deltaAltPct, '%') + '</td>' +
+      '<td>' + m.peso.toFixed(1) + '</td>' +
+      '<td>' + formatDelta(m.deltaPeso) + '</td>' +
+      '<td>' + formatDelta(m.deltaPesoPct, '%') + '</td>' +
+      '<td>' + bmiStr + '</td>' +
+      '<td><button class="btn btn-danger" onclick="deleteMeasurement(' + m.id + ')">✕</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+// =====================================================================
+// NAV / TABS
+// =====================================================================
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  document.querySelector(`.nav-tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'predizione') initPrediction();
+}
+
+function setDashView(v) {
+  dashView = v;
+  document.querySelectorAll('.selector-btn').forEach(b=>b.classList.remove('active-ant','active-lor','active-both'));
+  const btn = document.querySelector(`.selector-btn[onclick="setDashView('${v}')"]`);
+  if (v==='antonino') btn.classList.add('active-ant');
+  else if (v==='lorenzo') btn.classList.add('active-lor');
+  else btn.classList.add('active-both');
+  renderDashboard();
+}
+
+// =====================================================================
+// DASHBOARD
+// =====================================================================
+function renderDashboard() {
+  renderStats();
+  renderChartAltezza();
+  renderChartPeso();
+  renderChartBMI();
+  renderChartDeltaAlt();
+  renderChartDeltaPeso();
+  renderChartPercentile();
+  renderChartDeltaAltNorm();
+  renderChartDeltaPesoNorm();
+}
+
+function getDataForChild(child) {
+  return measurements.filter(m => m.child === child).sort((a,b)=>new Date(a.date)-new Date(b.date));
+}
+
+function enrichData(data) {
+  return data.map((m,i) => {
+    const prev = i>0 ? data[i-1] : null;
+    const deltaAlt = prev ? m.alt-prev.alt : null;
+    const deltaPeso = prev ? m.peso-prev.peso : null;
+    const bmi = calcBMI(m.alt, m.peso);
+    const whoH = m.mesi!==null ? getWHOHeight(m.mesi) : null;
+    const perc = whoH ? estimatePercentile(m.alt, whoH) : null;
+    return {...m, deltaAlt, deltaPeso, bmi, perc};
+  });
+}
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function monthsAgo(dateStr) {
+  // Calcola quanti mesi fa rispetto ad oggi (stessa logica di calcMesi ma fixed a oggi)
+  const d1 = new Date(dateStr);
+  const d2 = new Date();
+  let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  if (d2.getDate() < d1.getDate()) months--;
+  months = Math.max(0, months);
+  const dayDiff = d2.getDate() - d1.getDate() + (d2.getDate() < d1.getDate() ? 30 : 0);
+  const rounded = dayDiff >= 15 ? months + 1 : months;
+  if (rounded === 0) return 'questo mese';
+  if (rounded === 1) return '1 mese fa';
+  return rounded + ' mesi fa';
+}
+
+function renderStats() {
+  const grid = document.getElementById('stats-grid');
+  const children = dashView==='both' ? ['antonino','lorenzo'] :
+                   dashView==='antonino' ? ['antonino'] : ['lorenzo'];
+  const cards = [];
+  children.forEach(child => {
+    const data = getDataForChild(child);
+    if (data.length===0) return;
+    const last = data[data.length-1];
+    const color = child==='antonino' ? 'var(--ant)' : 'var(--lor)';
+    const name = child==='antonino' ? 'Antonino' : 'Lorenzo';
+    const bmi = calcBMI(last.alt, last.peso);
+    const whoH = last.mesi!==null ? getWHOHeight(last.mesi) : null;
+    const perc = whoH ? estimatePercentile(last.alt, whoH) : null;
+    const ago = monthsAgo(last.date);
+    cards.push(
+      '<div class="stat-card" style="border-color:' + color + '33">' +
+        '<div class="stat-label" style="color:' + color + '">' + name + ' — ultima altezza</div>' +
+        '<div class="stat-value" style="color:' + color + '">' + last.alt.toFixed(1) + ' <span style="font-size:1rem;opacity:0.6">cm</span></div>' +
+        '<div class="stat-sub">' + last.date + (last.mesi!==null?' · '+last.mesi+'m':'') + (perc!==null?' · P'+perc:'') + '</div>' +
+        '<div class="stat-sub" style="margin-top:4px;color:var(--acc);font-weight:500">⏱ ' + ago + '</div>' +
+      '</div>' +
+      '<div class="stat-card" style="border-color:' + color + '33">' +
+        '<div class="stat-label" style="color:' + color + '">' + name + ' — ultimo peso</div>' +
+        '<div class="stat-value" style="color:' + color + '">' + last.peso.toFixed(1) + ' <span style="font-size:1rem;opacity:0.6">kg</span></div>' +
+        '<div class="stat-sub">BMI: ' + (bmi?bmi.toFixed(1):'—') + '</div>' +
+        '<div class="stat-sub" style="margin-top:4px;color:var(--acc);font-weight:500">⏱ ' + ago + '</div>' +
+      '</div>'
+    );
+  });
+  grid.innerHTML = cards.join('') || '<div style="color:var(--text3);font-size:0.85rem">Nessun dato disponibile</div>';
+}
+
+function getWHOCurve(mesiList, percIdx) {
+  return mesiList.map(m => getWHOHeight(m)[percIdx]);
+}
+
+function renderChartAltezza() {
+  destroyChart('altezza');
+  const ctx = document.getElementById('chart-altezza').getContext('2d');
+  const datasets = [];
+
+  // OMS P3, P50, P97 (usa i mesi dell'intera gamma 0-228)
+  const mesiRange = Array.from({length:229},(_,i)=>i);
+
+  // Aggiunge bande OMS
+  datasets.push({
+    label:'P97',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[4]})),
+    borderColor:'rgba(255,120,120,0.6)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4
+  });
+  datasets.push({
+    label:'P85',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[3]})),
+    borderColor:'rgba(255,170,60,0.55)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4
+  });
+  datasets.push({
+    label:'P50',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[2]})),
+    borderColor:'rgba(80,220,170,0.75)',borderWidth:2,borderDash:[5,4],pointRadius:0,fill:false,tension:0.4
+  });
+  datasets.push({
+    label:'P15',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[1]})),
+    borderColor:'rgba(255,170,60,0.55)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4
+  });
+  datasets.push({
+    label:'P3',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[0]})),
+    borderColor:'rgba(255,120,120,0.6)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4
+  });
+
+  const children = dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child => {
+    const data = getDataForChild(child).filter(m=>m.mesi!==null);
+    if (!data.length) return;
+    datasets.push({
+      label: child==='antonino'?'Antonino':'Lorenzo',
+      data: data.map(m=>({x:m.mesi,y:m.alt})),
+      borderColor: child==='antonino'?'#4fc3f7':'#81c784',
+      backgroundColor: child==='antonino'?'rgba(79,195,247,0.25)':'rgba(129,199,132,0.25)',
+      borderWidth:3,pointRadius:6,pointHoverRadius:10,pointBackgroundColor:child==='antonino'?'#4fc3f7':'#81c784',pointBorderColor:'#0e1117',pointBorderWidth:2,tension:0.3,fill:false
+    });
+  });
+
+  charts.altezza = new Chart(ctx, {
+    type:'line', data:{datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'linear',title:{display:true,text:'Mesi',color:'#8ab0cc'},
+           ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'}},
+        y:{title:{display:true,text:'cm',color:'#8ab0cc'},
+           ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'}}
+      },
+      plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},
+               tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}
+    }
+  });
+}
+
+function renderChartPeso() {
+  destroyChart('peso');
+  const ctx = document.getElementById('chart-peso').getContext('2d');
+  const datasets = [];
+  const mesiRange = Array.from({length:229},(_,i)=>i);
+
+  datasets.push({label:'P97',data:mesiRange.map(m=>({x:m,y:getWHOWeight(m)[4]})),borderColor:'rgba(255,120,120,0.6)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4});
+  datasets.push({label:'P50',data:mesiRange.map(m=>({x:m,y:getWHOWeight(m)[2]})),borderColor:'rgba(80,220,170,0.75)',borderWidth:2,borderDash:[5,4],pointRadius:0,fill:false,tension:0.4});
+  datasets.push({label:'P3',data:mesiRange.map(m=>({x:m,y:getWHOWeight(m)[0]})),borderColor:'rgba(255,120,120,0.6)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4});
+
+  const children = dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=getDataForChild(child).filter(m=>m.mesi!==null);
+    if(!data.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:data.map(m=>({x:m.mesi,y:m.peso})),
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.25)':'rgba(129,199,132,0.25)',
+      borderWidth:3,pointRadius:6,pointHoverRadius:10,pointBackgroundColor:child==='antonino'?'#4fc3f7':'#81c784',pointBorderColor:'#0e1117',pointBorderWidth:2,tension:0.3,fill:false
+    });
+  });
+
+  charts.peso=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'kg',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+function renderChartBMI() {
+  destroyChart('bmi');
+  const ctx=document.getElementById('chart-bmi').getContext('2d');
+  const datasets=[];
+  const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null&&m.mesi>=12));
+    if(!data.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:data.map(m=>({x:m.mesi,y:m.bmi?parseFloat(m.bmi.toFixed(2)):null})),
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.2)':'rgba(129,199,132,0.2)',
+      borderWidth:3,pointRadius:6,pointHoverRadius:10,pointBackgroundColor:child==='antonino'?'#4fc3f7':'#81c784',pointBorderColor:'#0e1117',pointBorderWidth:2,tension:0.3,fill:false
+    });
+  });
+
+  charts.bmi=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'BMI',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+function renderChartDeltaAlt() {
+  destroyChart('delta-alt');
+  const ctx=document.getElementById('chart-delta-alt').getContext('2d');
+  const datasets=[];
+  const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null));
+    const filtered=data.filter(m=>m.deltaAlt!==null);
+    if(!filtered.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:filtered.map(m=>({x:m.mesi,y:parseFloat(m.deltaAlt.toFixed(2))})),
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.75)':'rgba(129,199,132,0.75)',
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      borderWidth:1.5,borderRadius:5,borderSkipped:false
+    });
+  });
+  charts['delta-alt']=new Chart(ctx,{type:'bar',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Δ cm',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+function renderChartDeltaPeso() {
+  destroyChart('delta-peso');
+  const ctx=document.getElementById('chart-delta-peso').getContext('2d');
+  const datasets=[];
+  const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null));
+    const filtered=data.filter(m=>m.deltaPeso!==null);
+    if(!filtered.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:filtered.map(m=>({x:m.mesi,y:parseFloat(m.deltaPeso.toFixed(2))})),
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.75)':'rgba(129,199,132,0.75)',
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      borderWidth:1.5,borderRadius:5,borderSkipped:false
+    });
+  });
+  charts['delta-peso']=new Chart(ctx,{type:'bar',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Δ kg',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+function renderChartPercentile() {
+  destroyChart('percentile');
+  const ctx=document.getElementById('chart-percentile').getContext('2d');
+  const datasets=[];
+  const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=getDataForChild(child).filter(m=>m.mesi!==null);
+    if(!data.length)return;
+    const pts=data.map(m=>{
+      const whoH=getWHOHeight(m.mesi);
+      const p=estimatePercentile(m.alt,whoH);
+      return {x:m.mesi,y:typeof p==='number'?p:null};
+    }).filter(p=>p.y!==null);
+    if(!pts.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:pts,
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.12)':'rgba(129,199,132,0.12)',
+      borderWidth:3,pointRadius:6,pointHoverRadius:10,pointBackgroundColor:child==='antonino'?'#4fc3f7':'#81c784',pointBorderColor:'#0e1117',pointBorderWidth:2,tension:0.3,fill:true
+    });
+  });
+  charts.percentile=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{min:0,max:100,ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Percentile',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+function renderChartDeltaAltNorm() {
+  destroyChart('delta-alt-norm');
+  const ctx=document.getElementById('chart-delta-alt-norm').getContext('2d');
+  const datasets=[];
+  const CHART_OPTS = {
+    responsive:true,maintainAspectRatio:false,
+    scales:{
+      x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},
+      y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'cm/mese',color:'#8ab0cc'}}
+    },
+    plugins:{
+      legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},
+      tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10,callbacks:{
+        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) + ' cm/mese'
+      }}
+    }
+  };
+  const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null));
+    const pts=data.filter(m=>m.deltaAlt!==null).map(m=>{
+      const prev=data[data.indexOf(m)-1];
+      const deltaMesi = prev ? (m.mesi - prev.mesi) : null;
+      if(!deltaMesi || deltaMesi<=0) return null;
+      return {x:m.mesi, y:parseFloat((m.deltaAlt/deltaMesi).toFixed(3))};
+    }).filter(Boolean);
+    if(!pts.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:pts,
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.55)':'rgba(129,199,132,0.55)',
+      borderWidth:1,borderRadius:4
+    });
+  });
+  charts['delta-alt-norm']=new Chart(ctx,{type:'bar',data:{datasets},options:CHART_OPTS});
+}
+
+function renderChartDeltaPesoNorm() {
+  destroyChart('delta-peso-norm');
+  const ctx=document.getElementById('chart-delta-peso-norm').getContext('2d');
+  const datasets=[];
+  const CHART_OPTS = {
+    responsive:true,maintainAspectRatio:false,
+    scales:{
+      x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},
+      y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'kg/mese',color:'#8ab0cc'}}
+    },
+    plugins:{
+      legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},
+      tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10,callbacks:{
+        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) + ' kg/mese'
+      }}
+    }
+  };
+  const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child=>{
+    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null));
+    const pts=data.filter(m=>m.deltaPeso!==null).map(m=>{
+      const prev=data[data.indexOf(m)-1];
+      const deltaMesi = prev ? (m.mesi - prev.mesi) : null;
+      if(!deltaMesi || deltaMesi<=0) return null;
+      return {x:m.mesi, y:parseFloat((m.deltaPeso/deltaMesi).toFixed(3))};
+    }).filter(Boolean);
+    if(!pts.length)return;
+    datasets.push({
+      label:child==='antonino'?'Antonino':'Lorenzo',
+      data:pts,
+      borderColor:child==='antonino'?'#4fc3f7':'#81c784',
+      backgroundColor:child==='antonino'?'rgba(79,195,247,0.55)':'rgba(129,199,132,0.55)',
+      borderWidth:1,borderRadius:4
+    });
+  });
+  charts['delta-peso-norm']=new Chart(ctx,{type:'bar',data:{datasets},options:CHART_OPTS});
+}
+
+// =====================================================================
+// ML PREDIZIONE
+// =====================================================================
+function initPrediction() {
+  // Niente da fare al primo caricamento
+}
+
+function polyFit(xs, ys, degree) {
+  // Least squares polynomial regression
+  const n = xs.length;
+  if (n < 2) return null;
+  // Costruisci matrice di Vandermonde
+  const X = xs.map(x => Array.from({length:degree+1},(_,i)=>Math.pow(x,i)));
+  // Normal equations: (X^T X) beta = X^T y
+  const XT = X[0].map((_,i)=>X.map(r=>r[i]));
+  const XTX = XT.map(row=>XT[0].map((_,j)=>row.reduce((s,_,k)=>s+row[k]*X[k][j],0)));
+  const XTy = XT.map(row=>row.reduce((s,v,i)=>s+v*ys[i],0));
+  // Gauss elimination
+  const m = XTX.length;
+  const A = XTX.map((r,i)=>[...r,XTy[i]]);
+  for(let c=0;c<m;c++){
+    let mx=c; for(let r=c+1;r<m;r++) if(Math.abs(A[r][c])>Math.abs(A[mx][c]))mx=r;
+    [A[c],A[mx]]=[A[mx],A[c]];
+    if(Math.abs(A[c][c])<1e-10)continue;
+    for(let r=0;r<m;r++) if(r!==c){
+      const f=A[r][c]/A[c][c];
+      for(let k=c;k<=m;k++)A[r][k]-=f*A[c][k];
+    }
+  }
+  return A.map((r,i)=>r[m]/r[i]);
+}
+
+function evalPoly(coeffs, x) {
+  return coeffs.reduce((s,c,i)=>s+c*Math.pow(x,i),0);
+}
+
+function runPrediction() {
+  const child = document.getElementById('ml-child').value;
+  const targetDate = document.getElementById('ml-date').value;
+  if (!targetDate) return showToast('⚠ Inserire data target');
+
+  const dob = child==='antonino' ? config.dobAnt : config.dobLor;
+  if (!dob) return showToast('⚠ Impostare data di nascita nella scheda Inserimento');
+
+  const targetMesi = calcMesi(child, targetDate);
+  const data = getDataForChild(child).filter(m=>m.mesi!==null);
+
+  if (data.length < 2) return showToast('⚠ Servono almeno 2 misurazioni per la predizione');
+
+  const xs = data.map(m=>m.mesi);
+  const ys = data.map(m=>m.alt);
+  const lastMesi = xs[xs.length-1];
+  const lastAlt = ys[ys.length-1];
+  const color = child==='antonino' ? '#4fc3f7' : '#81c784';
+
+  // 1. Regressione polinomiale (grado 2 o 3 in base ai dati)
+  const degree = Math.min(3, data.length-1);
+  const coeffs = polyFit(xs, ys, degree);
+  const polyPred = coeffs ? evalPoly(coeffs, targetMesi) : null;
+
+  // 2. OMS P50 ratio
+  const whoLast = getWHOHeight(lastMesi);
+  const whoTarget = getWHOHeight(targetMesi);
+  const p50Last = whoLast[2];
+  const p50Target = whoTarget[2];
+  const ratio = p50Last > 0 ? lastAlt / p50Last : 1;
+  const whoScaledPred = p50Target * ratio;
+
+  // 3. Stima percentile corrente e proiezione
+  const currentPerc = estimatePercentile(lastAlt, whoLast);
+  const percIdx = typeof currentPerc==='number' ?
+    [3,15,50,85,97].findIndex((p,i,a)=>currentPerc<=p||(i<a.length-1&&currentPerc<a[i+1])) : 2;
+  const percPred = whoTarget[Math.max(0,Math.min(4,percIdx))];
+
+  // Media pesata: più punti dati → più fiducia alla regressione
+  const w1 = Math.min(0.5, data.length*0.05); // poly
+  const w2 = 0.35;                               // OMS scaled
+  const w3 = 1 - w1 - w2;                        // percentile
+  const prediction = w1*(polyPred||whoScaledPred) + w2*whoScaledPred + w3*percPred;
+
+  // Intervallo di confidenza (σ residui regressione + incertezza OMS)
+  const residuals = data.map(m=>{
+    const p = coeffs ? evalPoly(coeffs,m.mesi) : m.alt;
+    return m.alt-p;
+  });
+  const rmse = Math.sqrt(residuals.reduce((s,r)=>s+r*r,0)/residuals.length);
+  const futureMesi = Math.max(0, targetMesi - lastMesi);
+  const sigma = rmse * Math.sqrt(1 + futureMesi/12);
+  const lo = prediction - 1.96*sigma;
+  const hi = prediction + 1.96*sigma;
+
+  // Confidenza (diminuisce con orizzonte temporale)
+  const horizonYears = futureMesi/12;
+  const confidence = Math.max(20, Math.min(95, 95 - horizonYears*8 - Math.max(0,3-data.length)*5));
+
+  // Risultati
+  const heightStr = prediction.toFixed(1) + ' cm';
+  document.getElementById('ml-height-value').textContent = heightStr;
+  document.getElementById('ml-height-value').style.color = color;
+  document.getElementById('ml-height-range').textContent =
+    `IC 95%: ${lo.toFixed(1)} – ${hi.toFixed(1)} cm  ·  ${targetDate} (${targetMesi}m)`;
+  document.getElementById('confidence-fill').style.width = confidence+'%';
+  document.getElementById('confidence-fill').style.background = confidence>70?'var(--green)':confidence>40?'var(--acc)':'var(--red)';
+  document.getElementById('confidence-pct').textContent = Math.round(confidence)+'%';
+  document.getElementById('ml-detail').style.display='block';
+  document.getElementById('ml-detail-content').innerHTML = `
+    Regressione polinomiale (grado ${degree}): <strong style="color:${color}">${polyPred?polyPred.toFixed(1):'-'} cm</strong> (peso ${Math.round(w1*100)}%)<br>
+    Proiezione OMS scalata (P50×ratio): <strong style="color:${color}">${whoScaledPred.toFixed(1)} cm</strong> (peso ${Math.round(w2*100)}%)<br>
+    Proiezione percentile corrente (P${currentPerc}): <strong style="color:${color}">${percPred.toFixed(1)} cm</strong> (peso ${Math.round(w3*100)}%)<br>
+    RMSE modello: ${rmse.toFixed(2)} cm · Dati: ${data.length} misurazioni · Orizzonte: ${futureMesi}m
+  `;
+
+  // Grafico ML
+  renderChartML(child, targetMesi, prediction, lo, hi, color);
+}
+
+function renderChartML(child, targetMesi, pred, lo, hi, color) {
+  destroyChart('ml');
+  const ctx=document.getElementById('chart-ml').getContext('2d');
+  const data=getDataForChild(child).filter(m=>m.mesi!==null);
+  const lastMesi=data.length>0?data[data.length-1].mesi:0;
+
+  // OMS P50 fino a targetMesi+12
+  const maxM=Math.max(targetMesi+6, lastMesi+6);
+  const mesiRange=Array.from({length:maxM+1},(_,i)=>i);
+
+  const datasets=[
+    {label:'P97 OMS',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[4]})),borderColor:'rgba(255,120,120,0.6)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4},
+    {label:'P50 OMS',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[2]})),borderColor:'rgba(80,220,170,0.75)',borderWidth:2,borderDash:[5,4],pointRadius:0,fill:false,tension:0.4},
+    {label:'P3 OMS',data:mesiRange.map(m=>({x:m,y:getWHOHeight(m)[0]})),borderColor:'rgba(255,120,120,0.6)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.4},
+    {label:child==='antonino'?'Antonino - storico':'Lorenzo - storico',
+     data:data.map(m=>({x:m.mesi,y:m.alt})),
+     borderColor:color,backgroundColor:color+'33',borderWidth:2.5,pointRadius:5,tension:0.3,fill:false},
+  ];
+
+  // Linea tratteggiata verso la predizione
+  if (data.length>0){
+    const last=data[data.length-1];
+    datasets.push({
+      label:'Predizione',
+      data:[{x:last.mesi,y:last.alt},{x:targetMesi,y:pred}],
+      borderColor:color+'88',borderWidth:2,borderDash:[6,4],
+      pointRadius:[0,8],pointBackgroundColor:color,fill:false
+    });
+    // IC95
+    datasets.push({
+      label:'IC 95%',
+      data:[{x:targetMesi,y:lo},{x:targetMesi,y:hi}],
+      borderColor:color+'44',borderWidth:8,pointRadius:0,fill:false
+    });
+  }
+
+  charts.ml=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'cm',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+// =====================================================================
+// EXPORT / IMPORT
+// =====================================================================
+function exportData() {
+  const payload = { config, measurements, version:1 };
+  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `crescita_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+function importTrigger() { document.getElementById('import-file').click(); }
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.measurements) measurements = data.measurements;
+      if (data.config) {
+        config = data.config;
+        document.getElementById('dob-ant').value = config.dobAnt||'';
+        document.getElementById('dob-lor').value = config.dobLor||'';
+      }
+      saveData();
+      localStorage.setItem('crescita_config',JSON.stringify(config));
+      updateTable();
+      showToast(`✓ Importate ${measurements.length} misurazioni`);
+    } catch {
+      showToast('⚠ File JSON non valido');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// =====================================================================
+// TOAST
+// =====================================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
