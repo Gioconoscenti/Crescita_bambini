@@ -517,6 +517,174 @@
     color: var(--text3);
     font-family: 'DM Mono', monospace;
   }
+
+  /* ZOOM PANEL */
+  .zoom-panel {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .zoom-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  .zoom-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+  .zoom-preset {
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text3);
+    font-size: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .zoom-preset:hover { border-color: var(--border2); color: var(--text2); }
+  .zoom-preset.active { background: rgba(240,165,0,0.12); border-color: var(--acc); color: var(--acc); }
+  .zoom-range-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 200px;
+  }
+  .zoom-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text2);
+    white-space: nowrap;
+    min-width: 36px;
+    text-align: center;
+  }
+  .dual-slider {
+    position: relative;
+    flex: 1;
+    height: 24px;
+    display: flex;
+    align-items: center;
+  }
+  .dual-slider input[type=range] {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+    -webkit-appearance: none;
+    pointer-events: none;
+  }
+  .dual-slider input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--acc);
+    border: 2px solid var(--bg);
+    cursor: pointer;
+    pointer-events: all;
+    box-shadow: 0 0 4px rgba(240,165,0,0.5);
+  }
+  .dual-slider input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--acc);
+    border: 2px solid var(--bg);
+    cursor: pointer;
+    pointer-events: all;
+  }
+  .slider-track {
+    position: absolute;
+    height: 4px;
+    width: 100%;
+    background: var(--border);
+    border-radius: 2px;
+    z-index: 0;
+  }
+  .slider-range {
+    position: absolute;
+    height: 4px;
+    background: var(--acc);
+    border-radius: 2px;
+    z-index: 1;
+    opacity: 0.6;
+  }
+  @media (max-width: 900px) {
+    .zoom-panel { padding: 12px 14px; gap: 10px; }
+    .zoom-range-wrap { min-width: 140px; }
+  }
+
+
+  /* Y-AXIS SLIDER per ogni grafico */
+  .chart-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .y-slider-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    width: 28px;
+    flex-shrink: 0;
+  }
+  .y-slider-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text3);
+    writing-mode: horizontal-tb;
+    text-align: center;
+    line-height: 1;
+  }
+  .y-slider-range {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+  }
+  .y-slider-range input[type=range] {
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 4px;
+    flex: 1;
+    min-height: 60px;
+    background: var(--border);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    accent-color: var(--acc);
+    border-radius: 2px;
+  }
+  .y-slider-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text3);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .chart-canvas-wrap {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+  }
+
 </style>
 </head>
 <body>
@@ -645,47 +813,284 @@
       <button class="selector-btn" onclick="setDashView('lorenzo')">Solo Lorenzo</button>
     </div>
 
+    <!-- ZOOM PANEL -->
+    <div class="zoom-panel">
+      <span class="zoom-label">🔍 Zoom</span>
+      <div class="zoom-presets">
+        <button class="zoom-preset" onclick="setZoomPreset(0,12)">0–12m</button>
+        <button class="zoom-preset" onclick="setZoomPreset(0,24)">0–24m</button>
+        <button class="zoom-preset" onclick="setZoomPreset(0,48)">0–4a</button>
+        <button class="zoom-preset" onclick="setZoomPreset(12,60)">1–5a</button>
+        <button class="zoom-preset" onclick="setZoomPreset(24,84)">2–7a</button>
+        <button class="zoom-preset active" id="zoom-preset-tutto" onclick="setZoomPreset(null,null)">Tutto</button>
+      </div>
+      <div class="zoom-range-wrap">
+        <span class="zoom-val" id="zoom-min-val">0m</span>
+        <div class="dual-slider">
+          <div class="slider-track"></div>
+          <div class="slider-range" id="slider-range-fill"></div>
+          <input type="range" id="zoom-min" min="0" max="228" value="0" step="1" oninput="onZoomSlider()">
+          <input type="range" id="zoom-max" min="0" max="228" value="228" step="1" oninput="onZoomSlider()">
+        </div>
+        <span class="zoom-val" id="zoom-max-val">228m</span>
+      </div>
+    </div>
+
     <div class="grid-2 mb-20">
       <div class="card">
         <div class="card-title">📏 Crescita in altezza (cm)</div>
-        <div class="chart-container-tall"><canvas id="chart-altezza"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-altezza"
+                min="45" max="230" value="230" step="1"
+                oninput="applyYSlider('altezza')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-altezza"
+                min="45" max="230" value="45" step="1"
+                oninput="applyYSlider('altezza')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-altezza">230</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">cm</span>
+            <span class="y-slider-val" id="ys-min-val-altezza">45</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container-tall"><canvas id="chart-altezza"></canvas></div>
+          </div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title">⚖ Crescita in peso (kg)</div>
-        <div class="chart-container-tall"><canvas id="chart-peso"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-peso"
+                min="2" max="100" value="100" step="1"
+                oninput="applyYSlider('peso')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-peso"
+                min="2" max="100" value="2" step="1"
+                oninput="applyYSlider('peso')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-peso">100</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">kg</span>
+            <span class="y-slider-val" id="ys-min-val-peso">2</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container-tall"><canvas id="chart-peso"></canvas></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="grid-2 mb-20">
       <div class="card">
         <div class="card-title">📐 BMI nel tempo</div>
-        <div class="chart-container"><canvas id="chart-bmi"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-bmi"
+                min="10" max="30" value="30" step="1"
+                oninput="applyYSlider('bmi')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-bmi"
+                min="10" max="30" value="10" step="1"
+                oninput="applyYSlider('bmi')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-bmi">30</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">BMI</span>
+            <span class="y-slider-val" id="ys-min-val-bmi">10</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-bmi"></canvas></div>
+          </div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title">📈 Delta altezza mensile (cm)</div>
-        <div class="chart-container"><canvas id="chart-delta-alt"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-delta-alt"
+                min="0" max="15" value="15" step="0.5"
+                oninput="applyYSlider('delta-alt')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-delta-alt"
+                min="0" max="15" value="0" step="0.5"
+                oninput="applyYSlider('delta-alt')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-delta-alt">15</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">cm</span>
+            <span class="y-slider-val" id="ys-min-val-delta-alt">0</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-delta-alt"></canvas></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="grid-2 mb-20">
       <div class="card">
         <div class="card-title">📈 Delta peso mensile (kg)</div>
-        <div class="chart-container"><canvas id="chart-delta-peso"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-delta-peso"
+                min="0" max="10" value="10" step="0.5"
+                oninput="applyYSlider('delta-peso')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-delta-peso"
+                min="0" max="10" value="0" step="0.5"
+                oninput="applyYSlider('delta-peso')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-delta-peso">10</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">kg</span>
+            <span class="y-slider-val" id="ys-min-val-delta-peso">0</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-delta-peso"></canvas></div>
+          </div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title">📊 Percentile altezza stimato</div>
-        <div class="chart-container"><canvas id="chart-percentile"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-percentile"
+                min="0" max="100" value="100" step="1"
+                oninput="applyYSlider('percentile')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-percentile"
+                min="0" max="100" value="0" step="1"
+                oninput="applyYSlider('percentile')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-percentile">100</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">%</span>
+            <span class="y-slider-val" id="ys-min-val-percentile">0</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-percentile"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-20">
+      <div class="card">
+        <div class="card-title">📊 Percentile peso stimato</div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-percentile-peso"
+                min="0" max="100" value="100" step="1"
+                oninput="applyYSlider('percentile-peso')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-percentile-peso"
+                min="0" max="100" value="0" step="1"
+                oninput="applyYSlider('percentile-peso')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-percentile-peso">100</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">%</span>
+            <span class="y-slider-val" id="ys-min-val-percentile-peso">0</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-percentile-peso"></canvas></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-title">📐 Velocità di crescita altezza (cm/mese)</div>
-        <div class="chart-container"><canvas id="chart-delta-alt-norm"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-delta-alt-norm"
+                min="0" max="5" value="5" step="0.1"
+                oninput="applyYSlider('delta-alt-norm')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-delta-alt-norm"
+                min="0" max="5" value="0" step="0.1"
+                oninput="applyYSlider('delta-alt-norm')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-delta-alt-norm">5</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">cm/m</span>
+            <span class="y-slider-val" id="ys-min-val-delta-alt-norm">0</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-delta-alt-norm"></canvas></div>
+          </div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title">📐 Velocità di crescita peso (kg/mese)</div>
-        <div class="chart-container"><canvas id="chart-delta-peso-norm"></canvas></div>
+        <div class="chart-wrap">
+          <div class="y-slider-col">
+            <div class="y-slider-label">max</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-max-delta-peso-norm"
+                min="0" max="3" value="3" step="0.1"
+                oninput="applyYSlider('delta-peso-norm')">
+            </div>
+            <div class="y-slider-label">min</div>
+            <div class="y-slider-range">
+              <input type="range" id="ys-min-delta-peso-norm"
+                min="0" max="3" value="0" step="0.1"
+                oninput="applyYSlider('delta-peso-norm')">
+            </div>
+          </div>
+          <div class="y-slider-col" style="width:22px">
+            <span class="y-slider-val" id="ys-max-val-delta-peso-norm">3</span>
+            <span class="y-slider-label" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:0.55rem;color:var(--text3);letter-spacing:0.1em">kg/m</span>
+            <span class="y-slider-val" id="ys-min-val-delta-peso-norm">0</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <div class="chart-container"><canvas id="chart-delta-peso-norm"></canvas></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -703,16 +1108,25 @@
       <div class="card">
         <div class="card-title">🔮 Parametri predizione</div>
         <div class="form-grid" style="margin-bottom:20px">
-          <div class="form-group">
+          <div class="form-group full">
             <label>Bambino</label>
-            <select id="ml-child">
+            <select id="ml-child" onchange="mlChildChanged()">
               <option value="antonino">Antonino</option>
               <option value="lorenzo">Lorenzo</option>
             </select>
           </div>
           <div class="form-group">
             <label>Data target</label>
-            <input type="date" id="ml-date">
+            <input type="date" id="ml-date" oninput="mlDateChanged()">
+          </div>
+          <div class="form-group">
+            <label>Età target</label>
+            <div style="display:flex;gap:6px;">
+              <input type="number" id="ml-anni" min="0" max="19" placeholder="aa" style="width:60px;text-align:center" oninput="mlEtaChanged()">
+              <span style="align-self:center;color:var(--text3);font-size:0.85rem">a</span>
+              <input type="number" id="ml-mesi-eta" min="0" max="11" placeholder="mm" style="width:60px;text-align:center" oninput="mlEtaChanged()">
+              <span style="align-self:center;color:var(--text3);font-size:0.85rem">m</span>
+            </div>
           </div>
         </div>
         <button class="btn btn-primary" onclick="runPrediction()">Calcola predizione</button>
@@ -905,7 +1319,7 @@ function calcBMI(alt, peso) {
 
 function bmiCategory(bmi, mesi) {
   // Per bambini uso soglie semplificate (non le stesse degli adulti)
-  if (mesi < 24) return null; // troppo piccoli per BMI significativo
+  // BMI mostrato da mese 0
   if (bmi < 14) return { label: 'Sottopeso', cls: 'bmi-sottopeso' };
   if (bmi < 18) return { label: 'Normale', cls: 'bmi-normale' };
   if (bmi < 25) return { label: 'Sovrappeso', cls: 'bmi-sovrappeso' };
@@ -1128,6 +1542,108 @@ function setDashView(v) {
   renderDashboard();
 }
 
+
+// =====================================================================
+// ZOOM GLOBALE GRAFICI
+// =====================================================================
+let zoomMin = 0;
+let zoomMax = 228;   // usato solo quando zoomIsTutto=false
+let zoomIsTutto = true;
+
+function mesiToLabel(m) {
+  m = Math.round(m);
+  if (m < 12) return m + 'm';
+  const y = Math.floor(m/12), mo = m%12;
+  return mo === 0 ? y + 'a' : y + 'a ' + mo + 'm';
+}
+
+function getDataMaxMesi() {
+  const children = dashView==='both' ? ['antonino','lorenzo'] :
+                   dashView==='antonino' ? ['antonino'] : ['lorenzo'];
+  let mx = 12;
+  children.forEach(child => {
+    getDataForChild(child).forEach(m => { if (m.mesi !== null && m.mesi > mx) mx = m.mesi; });
+  });
+  return Math.ceil(mx) + 2;
+}
+
+function setZoomPreset(min, max) {
+  zoomIsTutto = (max === null);
+  zoomMin = min ?? 0;
+  if (!zoomIsTutto) zoomMax = max;
+  document.querySelectorAll('.zoom-preset').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  applyZoomToAllCharts();
+}
+
+function onZoomSlider() {
+  let mn = parseInt(document.getElementById('zoom-min').value);
+  let mx = parseInt(document.getElementById('zoom-max').value);
+  if (mn >= mx) {
+    if (event.target.id === 'zoom-min') { mn = mx - 1; document.getElementById('zoom-min').value = mn; }
+    else { mx = mn + 1; document.getElementById('zoom-max').value = mx; }
+  }
+  zoomMin = mn;
+  zoomMax = mx;
+  zoomIsTutto = false;
+  document.querySelectorAll('.zoom-preset').forEach(b => b.classList.remove('active'));
+  applyZoomToAllCharts();
+}
+
+function updateZoomUI(effectiveMax) {
+  document.getElementById('zoom-min-val').textContent = mesiToLabel(zoomMin);
+  document.getElementById('zoom-max-val').textContent = zoomIsTutto ? 'Max' : mesiToLabel(zoomMax);
+  // Posizione slider
+  const slMax = zoomIsTutto ? effectiveMax : zoomMax;
+  document.getElementById('zoom-min').value = zoomMin;
+  document.getElementById('zoom-max').value = Math.min(slMax, 228);
+  const fill = document.getElementById('slider-range-fill');
+  if (fill) {
+    const pct1 = (zoomMin / 228) * 100;
+    const pct2 = (Math.min(slMax, 228) / 228) * 100;
+    fill.style.left = pct1 + '%';
+    fill.style.width = (pct2 - pct1) + '%';
+  }
+}
+
+function applyZoomToAllCharts() {
+  const effectiveMax = zoomIsTutto ? getDataMaxMesi() : zoomMax;
+  updateZoomUI(effectiveMax);
+  const chartIds = ['altezza','peso','bmi','delta-alt','delta-peso','percentile','percentile-peso','delta-alt-norm','delta-peso-norm'];
+  chartIds.forEach(id => {
+    if (!charts[id]) return;
+    charts[id].options.scales.x.min = zoomMin;
+    charts[id].options.scales.x.max = effectiveMax;
+    applyYSlider(id, false);   // imposta y.min/y.max senza update
+    charts[id].update('none'); // update unico qui
+  });
+}
+
+function applyYSlider(id, doUpdate) {
+  if (doUpdate === undefined) doUpdate = true;
+  const ch = charts[id];
+  if (!ch) return;
+  const slMin = document.getElementById('ys-min-' + id);
+  const slMax = document.getElementById('ys-max-' + id);
+  if (!slMin || !slMax) return;
+  let mn = parseFloat(slMin.value);
+  let mx = parseFloat(slMax.value);
+  // Evita inversione
+  if (mn >= mx) {
+    if (document.activeElement === slMin) { mn = mx - parseFloat(slMin.step||1); slMin.value = mn; }
+    else { mx = mn + parseFloat(slMax.step||1); slMax.value = mx; }
+  }
+  // Aggiorna label
+  const vMin = document.getElementById('ys-min-val-' + id);
+  const vMax = document.getElementById('ys-max-val-' + id);
+  if (vMin) vMin.textContent = mn;
+  if (vMax) vMax.textContent = mx;
+  // Applica a Chart.js
+  ch.options.scales.y.min = mn;
+  ch.options.scales.y.max = mx;
+  if (doUpdate) ch.update('none');
+}
+
 // =====================================================================
 // DASHBOARD
 // =====================================================================
@@ -1141,6 +1657,9 @@ function renderDashboard() {
   renderChartPercentile();
   renderChartDeltaAltNorm();
   renderChartDeltaPesoNorm();
+  renderChartPercentilePeso();
+  // Applica zoom dopo che Chart.js ha finito il render
+  setTimeout(applyZoomToAllCharts, 0);
 }
 
 function getDataForChild(child) {
@@ -1305,7 +1824,7 @@ function renderChartBMI() {
   const datasets=[];
   const children=dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
   children.forEach(child=>{
-    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null&&m.mesi>=12));
+    const data=enrichData(getDataForChild(child).filter(m=>m.mesi!==null));
     if(!data.length)return;
     datasets.push({
       label:child==='antonino'?'Antonino':'Lorenzo',
@@ -1317,6 +1836,42 @@ function renderChartBMI() {
   });
 
   charts.bmi=new Chart(ctx,{type:'line',data:{datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'Mesi',color:'#8ab0cc'}},y:{ticks:{color:'#b0bdd4',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},title:{display:true,text:'BMI',color:'#8ab0cc'}}},plugins:{legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10}}}});
+}
+
+function renderChartPercentilePeso() {
+  destroyChart('percentile-peso');
+  const ctx = document.getElementById('chart-percentile-peso').getContext('2d');
+  const datasets = [];
+  const children = dashView==='both'?['antonino','lorenzo']:dashView==='antonino'?['antonino']:['lorenzo'];
+  children.forEach(child => {
+    const data = getDataForChild(child).filter(m => m.mesi !== null);
+    if (!data.length) return;
+    const pts = data.map(m => {
+      const whoW = getWHOWeight(m.mesi);
+      const p = estimatePercentile(m.peso, whoW);
+      return { x: m.mesi, y: typeof p === 'number' ? p : null };
+    }).filter(p => p.y !== null);
+    if (!pts.length) return;
+    datasets.push({
+      label: child==='antonino' ? 'Antonino' : 'Lorenzo',
+      data: pts,
+      borderColor: child==='antonino' ? '#4fc3f7' : '#81c784',
+      backgroundColor: child==='antonino' ? 'rgba(79,195,247,0.12)' : 'rgba(129,199,132,0.12)',
+      borderWidth: 3, pointRadius: 6, pointHoverRadius: 10,
+      pointBackgroundColor: child==='antonino' ? '#4fc3f7' : '#81c784',
+      pointBorderColor: '#0e1117', pointBorderWidth: 2,
+      tension: 0.3, fill: true
+    });
+  });
+  const OPTS = { responsive:true, maintainAspectRatio:false,
+    scales:{
+      x:{ type:'linear', ticks:{color:'#b0bdd4',font:{size:11}}, grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true,text:'Mesi',color:'#8ab0cc'} },
+      y:{ min:0, max:100, ticks:{color:'#b0bdd4',font:{size:11}}, grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true,text:'Percentile',color:'#8ab0cc'} }
+    },
+    plugins:{ legend:{labels:{color:'#c8d6e8',boxWidth:12,font:{size:12}}},
+              tooltip:{backgroundColor:'#0e1520',borderColor:'#4a6080',borderWidth:1,titleColor:'#e0eaf8',bodyColor:'#b0c8e0',padding:10} }
+  };
+  charts['percentile-peso'] = new Chart(ctx, { type:'line', data:{datasets}, options:OPTS });
 }
 
 function renderChartDeltaAlt() {
@@ -1495,6 +2050,42 @@ function polyFit(xs, ys, degree) {
 function evalPoly(coeffs, x) {
   return coeffs.reduce((s,c,i)=>s+c*Math.pow(x,i),0);
 }
+
+function mlChildChanged() {
+  // Quando cambia il bambino ricalcola la data dalla età se compilata
+  const a = parseInt(document.getElementById('ml-anni').value);
+  const m = parseInt(document.getElementById('ml-mesi-eta').value);
+  if (!isNaN(a) || !isNaN(m)) mlEtaChanged();
+}
+
+function mlDateChanged() {
+  const child = document.getElementById('ml-child').value;
+  const dateStr = document.getElementById('ml-date').value;
+  if (!dateStr) return;
+  const dob = child === 'antonino' ? config.dobAnt : config.dobLor;
+  if (!dob) return;
+  const d1 = new Date(dob), d2 = new Date(dateStr);
+  let months = (d2.getFullYear()-d1.getFullYear())*12 + (d2.getMonth()-d1.getMonth());
+  if (d2.getDate() < d1.getDate()) months--;
+  months = Math.max(0, months);
+  const anni = Math.floor(months/12);
+  const mesi = months % 12;
+  document.getElementById('ml-anni').value = anni;
+  document.getElementById('ml-mesi-eta').value = mesi;
+}
+
+function mlEtaChanged() {
+  const child = document.getElementById('ml-child').value;
+  const dob = child === 'antonino' ? config.dobAnt : config.dobLor;
+  if (!dob) return;
+  const a = parseInt(document.getElementById('ml-anni').value) || 0;
+  const m = parseInt(document.getElementById('ml-mesi-eta').value) || 0;
+  const totalMesi = a * 12 + m;
+  const d = new Date(dob);
+  d.setMonth(d.getMonth() + totalMesi);
+  document.getElementById('ml-date').value = d.toISOString().split('T')[0];
+}
+
 
 function runPrediction() {
   const child = document.getElementById('ml-child').value;
