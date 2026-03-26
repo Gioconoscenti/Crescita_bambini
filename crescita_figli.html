@@ -831,6 +831,7 @@ let charts = {};
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   document.getElementById('inp-date').value = today();
+  renderDashboard();
   document.getElementById('ml-date').value = today();
   updateMesiPreview();
 });
