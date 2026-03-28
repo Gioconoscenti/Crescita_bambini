@@ -694,6 +694,10 @@
   <div class="header-badges">
     <div class="badge badge-ant"><span class="badge-dot"></span>Antonino</div>
     <div class="badge badge-lor"><span class="badge-dot"></span>Lorenzo</div>
+    <div id="sync-indicator" style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);">
+      <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text3)"></span>
+      <span id="sync-label">—</span>
+    </div>
   </div>
 </header>
 
@@ -1243,11 +1247,10 @@ let charts = {};
 // INIT
 // =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  loadData();
   document.getElementById('inp-date').value = today();
-  renderDashboard();
   document.getElementById('ml-date').value = today();
   updateMesiPreview();
+  loadData(); // loadData chiama updateTable + renderDashboard internamente
 });
 
 function today() {
@@ -1256,20 +1259,90 @@ function today() {
 
 const PRELOAD_DATA = [{"id": 1000, "child": "antonino", "date": "2019-08-31", "mesi": 0.0, "alt": 51.0, "peso": 4.08}, {"id": 1001, "child": "antonino", "date": "2019-09-16", "mesi": 0.5, "alt": 53.0, "peso": 4.17}, {"id": 1002, "child": "antonino", "date": "2019-09-30", "mesi": 1.0, "alt": 56.5, "peso": 4.68}, {"id": 1003, "child": "antonino", "date": "2019-10-14", "mesi": 1.5, "alt": 60.0, "peso": 5.06}, {"id": 1004, "child": "antonino", "date": "2019-10-28", "mesi": 2.0, "alt": 60.0, "peso": 5.41}, {"id": 1005, "child": "antonino", "date": "2019-11-11", "mesi": 2.5, "alt": 61.0, "peso": 5.65}, {"id": 1006, "child": "antonino", "date": "2019-11-25", "mesi": 3.0, "alt": 62.0, "peso": 5.88}, {"id": 1007, "child": "antonino", "date": "2019-12-16", "mesi": 3.5, "alt": 64.0, "peso": 6.49}, {"id": 1008, "child": "antonino", "date": "2019-12-30", "mesi": 4.0, "alt": 67.0, "peso": 6.69}, {"id": 1009, "child": "antonino", "date": "2020-01-13", "mesi": 4.5, "alt": 67.0, "peso": 6.89}, {"id": 1010, "child": "antonino", "date": "2020-01-31", "mesi": 5.0, "alt": 68.0, "peso": 7.14}, {"id": 1011, "child": "antonino", "date": "2020-02-17", "mesi": 5.5, "alt": 69.0, "peso": 7.45}, {"id": 1012, "child": "antonino", "date": "2020-03-02", "mesi": 6.0, "alt": 70.0, "peso": 7.54}, {"id": 1013, "child": "antonino", "date": "2020-03-15", "mesi": 6.5, "alt": 71.0, "peso": 7.6}, {"id": 1014, "child": "antonino", "date": "2020-03-31", "mesi": 7.0, "alt": 72.0, "peso": 7.72}, {"id": 1015, "child": "antonino", "date": "2020-04-14", "mesi": 7.5, "alt": 72.5, "peso": 8.1}, {"id": 1016, "child": "antonino", "date": "2020-04-30", "mesi": 8.0, "alt": 73.5, "peso": 8.41}, {"id": 1017, "child": "antonino", "date": "2020-05-14", "mesi": 8.5, "alt": 74.5, "peso": 8.69}, {"id": 1018, "child": "antonino", "date": "2020-05-30", "mesi": 9.0, "alt": 75.0, "peso": 8.98}, {"id": 1019, "child": "antonino", "date": "2020-06-15", "mesi": 9.5, "alt": 75.5, "peso": 9.17}, {"id": 1020, "child": "antonino", "date": "2020-06-30", "mesi": 10.0, "alt": 76.5, "peso": 9.22}, {"id": 1021, "child": "antonino", "date": "2020-07-15", "mesi": 10.5, "alt": 77.5, "peso": 9.5}, {"id": 1022, "child": "antonino", "date": "2020-07-31", "mesi": 11.0, "alt": 78.0, "peso": 9.8}, {"id": 1023, "child": "antonino", "date": "2020-08-15", "mesi": 11.5, "alt": 79.0, "peso": 9.95}, {"id": 1024, "child": "antonino", "date": "2020-08-31", "mesi": 12.0, "alt": 79.5, "peso": 10.1}, {"id": 1025, "child": "antonino", "date": "2020-10-01", "mesi": 13.0, "alt": 80.0, "peso": 10.4}, {"id": 1026, "child": "antonino", "date": "2020-10-31", "mesi": 14.0, "alt": 81.0, "peso": 10.5}, {"id": 1027, "child": "antonino", "date": "2020-12-01", "mesi": 15.0, "alt": 82.0, "peso": 10.8}, {"id": 1028, "child": "antonino", "date": "2020-12-31", "mesi": 16.0, "alt": 83.0, "peso": 11.3}, {"id": 1029, "child": "antonino", "date": "2021-01-31", "mesi": 17.0, "alt": 85.0, "peso": 11.6}, {"id": 1030, "child": "antonino", "date": "2021-03-01", "mesi": 18.0, "alt": 86.0, "peso": 11.8}, {"id": 1031, "child": "antonino", "date": "2021-04-04", "mesi": 19.0, "alt": 87.0, "peso": 11.9}, {"id": 1032, "child": "antonino", "date": "2021-06-04", "mesi": 21.0, "alt": 90.0, "peso": 12.3}, {"id": 1033, "child": "antonino", "date": "2021-08-31", "mesi": 24.0, "alt": 93.0, "peso": 12.7}, {"id": 1034, "child": "antonino", "date": "2021-10-01", "mesi": 25.0, "alt": 93.0, "peso": 13.2}, {"id": 1035, "child": "antonino", "date": "2021-12-08", "mesi": 27.0, "alt": 94.0, "peso": 12.8}, {"id": 1036, "child": "antonino", "date": "2022-01-31", "mesi": 29.0, "alt": 96.0, "peso": 13.4}, {"id": 1037, "child": "antonino", "date": "2022-03-01", "mesi": 30.0, "alt": 96.0, "peso": 13.7}, {"id": 1038, "child": "antonino", "date": "2022-04-04", "mesi": 31.0, "alt": 97.0, "peso": 13.4}, {"id": 1039, "child": "antonino", "date": "2022-09-01", "mesi": 36.0, "alt": 100.0, "peso": 14.3}, {"id": 1040, "child": "antonino", "date": "2023-01-31", "mesi": 41.0, "alt": 103.0, "peso": 15.0}, {"id": 1041, "child": "antonino", "date": "2023-05-31", "mesi": 45.0, "alt": 105.0, "peso": 15.7}, {"id": 1042, "child": "antonino", "date": "2023-08-31", "mesi": 48.0, "alt": 107.0, "peso": 15.8}, {"id": 1043, "child": "antonino", "date": "2023-10-19", "mesi": 49.0, "alt": 107.0, "peso": 15.5}, {"id": 1044, "child": "antonino", "date": "2024-01-05", "mesi": 52.0, "alt": 109.0, "peso": 16.1}, {"id": 1045, "child": "antonino", "date": "2024-04-01", "mesi": 55.0, "alt": 111.0, "peso": 16.7}, {"id": 1046, "child": "antonino", "date": "2024-09-01", "mesi": 60.0, "alt": 114.0, "peso": 17.9}, {"id": 1047, "child": "antonino", "date": "2025-02-01", "mesi": 65.0, "alt": 115.0, "peso": 18.6}, {"id": 1048, "child": "antonino", "date": "2025-07-01", "mesi": 70.0, "alt": 118.0, "peso": 19.6}, {"id": 1049, "child": "antonino", "date": "2025-09-01", "mesi": 72.0, "alt": 119.0, "peso": 20.3}, {"id": 1050, "child": "antonino", "date": "2026-01-01", "mesi": 76.0, "alt": 122.0, "peso": 21.0}, {"id": 1051, "child": "lorenzo", "date": "2022-01-22", "mesi": 0.0, "alt": 56.0, "peso": 4.48}, {"id": 1052, "child": "lorenzo", "date": "2022-02-22", "mesi": 1.0, "alt": 59.0, "peso": 5.15}, {"id": 1053, "child": "lorenzo", "date": "2022-03-22", "mesi": 2.0, "alt": 61.0, "peso": 5.6}, {"id": 1054, "child": "lorenzo", "date": "2022-04-22", "mesi": 3.0, "alt": 63.0, "peso": 6.16}, {"id": 1055, "child": "lorenzo", "date": "2022-05-07", "mesi": 3.5, "alt": 65.0, "peso": 6.32}, {"id": 1056, "child": "lorenzo", "date": "2022-05-22", "mesi": 4.0, "alt": 67.0, "peso": 6.55}, {"id": 1057, "child": "lorenzo", "date": "2022-06-23", "mesi": 5.0, "alt": 69.0, "peso": 7.3}, {"id": 1058, "child": "lorenzo", "date": "2022-07-22", "mesi": 6.0, "alt": 71.0, "peso": 7.4}, {"id": 1059, "child": "lorenzo", "date": "2022-08-23", "mesi": 7.0, "alt": 72.0, "peso": 7.86}, {"id": 1060, "child": "lorenzo", "date": "2022-09-10", "mesi": 7.5, "alt": 72.5, "peso": 8.4}, {"id": 1061, "child": "lorenzo", "date": "2022-09-23", "mesi": 8.0, "alt": 72.0, "peso": 8.66}, {"id": 1062, "child": "lorenzo", "date": "2022-10-23", "mesi": 9.0, "alt": 74.0, "peso": 8.79}, {"id": 1063, "child": "lorenzo", "date": "2022-11-22", "mesi": 10.0, "alt": 74.0, "peso": 8.6}, {"id": 1064, "child": "lorenzo", "date": "2022-12-22", "mesi": 11.0, "alt": 76.0, "peso": 8.65}, {"id": 1065, "child": "lorenzo", "date": "2023-01-06", "mesi": 11.5, "alt": 76.0, "peso": 9.1}, {"id": 1066, "child": "lorenzo", "date": "2023-01-22", "mesi": 12.0, "alt": 77.0, "peso": 9.3}, {"id": 1067, "child": "lorenzo", "date": "2023-02-23", "mesi": 13.0, "alt": 78.0, "peso": 10.05}, {"id": 1068, "child": "lorenzo", "date": "2023-03-22", "mesi": 14.0, "alt": 79.0, "peso": 10.1}, {"id": 1069, "child": "lorenzo", "date": "2023-04-30", "mesi": 15.0, "alt": 80.0, "peso": 10.6}, {"id": 1070, "child": "lorenzo", "date": "2023-05-22", "mesi": 16.0, "alt": 82.0, "peso": 10.8}, {"id": 1071, "child": "lorenzo", "date": "2023-08-28", "mesi": 19.0, "alt": 84.0, "peso": 11.35}, {"id": 1072, "child": "lorenzo", "date": "2023-10-22", "mesi": 21.0, "alt": 86.0, "peso": 11.72}, {"id": 1073, "child": "lorenzo", "date": "2024-01-05", "mesi": 23.0, "alt": 88.0, "peso": 11.2}, {"id": 1074, "child": "lorenzo", "date": "2024-04-01", "mesi": 26.0, "alt": 91.0, "peso": 12.12}, {"id": 1075, "child": "lorenzo", "date": "2024-09-01", "mesi": 31.0, "alt": 94.0, "peso": 12.7}, {"id": 1076, "child": "lorenzo", "date": "2025-02-01", "mesi": 36.0, "alt": 95.0, "peso": 13.2}, {"id": 1077, "child": "lorenzo", "date": "2025-07-01", "mesi": 41.0, "alt": 98.0, "peso": 14.4}, {"id": 1078, "child": "lorenzo", "date": "2025-09-01", "mesi": 43.0, "alt": 99.0, "peso": 14.4}, {"id": 1079, "child": "lorenzo", "date": "2026-01-01", "mesi": 47.0, "alt": 101.0, "peso": 15.2}];
 
-function loadData() {
-  const d = localStorage.getItem('crescita_data');
-  if (d) {
-    measurements = JSON.parse(d);
-  } else {
-    // Prima apertura: carica dati dall'Excel
-    measurements = PRELOAD_DATA;
-    saveData();
-  }
-  updateTable();
+// =====================================================================
+// GOOGLE SHEETS SYNC
+// =====================================================================
+const GS_URL = 'https://script.google.com/macros/s/AKfycbxufCyBJ9AJUFdFgFaiVNZkju9Jdlnztt48k0gRA5G9fX7iZB4H-2t8LBSjJLDaZxETHQ/exec'; // <-- incolla qui l'URL del Web App dopo il deploy
+const GS_KEY = 'crescita2024';
+
+function setSyncStatus(state, msg) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (!dot || !lbl) return;
+  const colors = { ok:'#66bb6a', saving:'#f0a500', error:'#ef5350', loading:'#4fc3f7' };
+  dot.style.background = colors[state] || 'var(--text3)';
+  lbl.textContent = msg;
 }
 
-function saveData() {
+async function loadData() {
+  // Prima carica dal localStorage come cache immediata
+  const cached = localStorage.getItem('crescita_data');
+  if (cached) {
+    measurements = JSON.parse(cached);
+    updateTable();
+    renderDashboard();
+  } else {
+    measurements = PRELOAD_DATA;
+    updateTable();
+    renderDashboard();
+  }
+
+  // Poi sincronizza da Google Sheets se configurato
+  if (!GS_URL) {
+    setSyncStatus('error', 'GS non configurato');
+    return;
+  }
+  setSyncStatus('loading', 'Caricamento...');
+  try {
+    const res = await fetch(`${GS_URL}?action=read&key=${GS_KEY}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.measurements && data.measurements.length > 0) {
+      // Sheets ha dati: usa quelli (fonte di verità)
+      measurements = data.measurements.map(m => ({
+        ...m,
+        mesi: parseFloat(m.mesi),
+        alt:  parseFloat(m.alt),
+        peso: parseFloat(m.peso)
+      }));
+      localStorage.setItem('crescita_data', JSON.stringify(measurements));
+      updateTable();
+      renderDashboard();
+    } else {
+      // Sheets vuoto: carica i dati precaricati e scrivili su Sheets
+      measurements = PRELOAD_DATA;
+      localStorage.setItem('crescita_data', JSON.stringify(measurements));
+      updateTable();
+      renderDashboard();
+      await saveData(); // scrive i dati storici su Sheets
+    }
+    setSyncStatus('ok', 'Sincronizzato');
+  } catch(e) {
+    setSyncStatus('error', 'Offline (cache)');
+    console.warn('GS load error:', e);
+  }
+}
+
+async function saveData() {
+  // Salva sempre in localStorage (immediato)
   localStorage.setItem('crescita_data', JSON.stringify(measurements));
+
+  // Poi sincronizza su Google Sheets
+  if (!GS_URL) return;
+  setSyncStatus('saving', 'Salvataggio...');
+  try {
+    const res = await fetch(GS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'write', key: GS_KEY, data: measurements })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    setSyncStatus('ok', 'Salvato ✓');
+    setTimeout(() => setSyncStatus('ok', 'Sincronizzato'), 2000);
+  } catch(e) {
+    setSyncStatus('error', 'Errore salvataggio');
+    console.warn('GS save error:', e);
+  }
 }
 
 // =====================================================================
